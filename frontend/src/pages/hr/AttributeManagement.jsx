@@ -1,0 +1,121 @@
+import React, { useEffect, useState } from 'react';
+import Layout from '../../components/Layout';
+import Card from '../../components/Card';
+import Button from '../../components/Button';
+import Alert from '../../components/Alert';
+import { attributeAPI } from '../../services/api';
+
+const EMPTY_FORM = { name: '', type: 'VALUES', description: '' };
+
+export default function AttributeManagement() {
+  const [attributes, setAttributes] = useState([]);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [editId, setEditId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [msg, setMsg] = useState({ type: '', text: '' });
+  const [loading, setLoading] = useState(false);
+
+  const load = () => attributeAPI.getAll().then((r) => setAttributes(r.data.attributes || [])).catch(() => {});
+  useEffect(() => { load(); }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (editId) {
+        await attributeAPI.update(editId, form);
+        setMsg({ type: 'success', text: 'Attribute updated.' });
+      } else {
+        await attributeAPI.create(form);
+        setMsg({ type: 'success', text: 'Attribute created.' });
+      }
+      setForm(EMPTY_FORM); setEditId(null); setShowForm(false); load();
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.message || 'Failed' });
+    } finally { setLoading(false); }
+  };
+
+  const handleDeactivate = async (id) => {
+    if (!window.confirm('Deactivate this attribute?')) return;
+    try {
+      await attributeAPI.delete(id);
+      setMsg({ type: 'success', text: 'Deactivated.' });
+      load();
+    } catch { setMsg({ type: 'error', text: 'Failed' }); }
+  };
+
+  const values = attributes.filter((a) => a.type === 'VALUES');
+  const competencies = attributes.filter((a) => a.type === 'COMPETENCIES');
+
+  return (
+    <Layout>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800 }}>Attribute Master</h1>
+        <Button onClick={() => { setShowForm(!showForm); setEditId(null); setForm(EMPTY_FORM); }}>
+          {showForm ? 'Cancel' : '+ New Attribute'}
+        </Button>
+      </div>
+
+      <Alert type={msg.type || 'info'} message={msg.text} />
+
+      {showForm && (
+        <Card title={editId ? 'Edit Attribute' : 'Create Attribute'} style={{ marginBottom: 20 }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+              <div>
+                <label style={labelStyle}>Name *</label>
+                <input style={inputStyle} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              </div>
+              <div>
+                <label style={labelStyle}>Type *</label>
+                <select style={inputStyle} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+                  <option value="VALUES">Values</option>
+                  <option value="COMPETENCIES">Competencies</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Description</label>
+              <textarea style={{ ...inputStyle, height: 60, resize: 'vertical' }} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button type="submit" loading={loading}>{editId ? 'Update' : 'Create'}</Button>
+              <Button variant="secondary" onClick={() => { setShowForm(false); setEditId(null); }}>Cancel</Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        {[{ label: 'Values', list: values, color: '#7c3aed' }, { label: 'Competencies', list: competencies, color: '#0369a1' }].map(({ label, list, color }) => (
+          <Card key={label} title={`${label} (${list.length})`}>
+            {list.length === 0 ? (
+              <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No {label.toLowerCase()} added yet.</p>
+            ) : (
+              list.map((a) => (
+                <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: a.isActive ? '#1e293b' : '#94a3b8' }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: '#94a3b8' }}>{a.description}</div>
+                    {!a.isActive && <span style={{ fontSize: 11, color: '#dc2626' }}>Inactive</span>}
+                  </div>
+                  {a.isActive && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <Button size="sm" variant="outline" onClick={() => { setEditId(a.id); setForm({ name: a.name, type: a.type, description: a.description || '' }); setShowForm(true); }}>
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="danger" onClick={() => handleDeactivate(a.id)}>Deactivate</Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </Card>
+        ))}
+      </div>
+    </Layout>
+  );
+}
+
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 };
+const inputStyle = { width: '100%', padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
