@@ -4,6 +4,8 @@ const { NotFoundError, ValidationError } = require('../utils/errors');
 const PHASE_ORDER = ['GOAL_SETTING', 'MID_YEAR_REVIEW', 'ANNUAL_APPRAISAL'];
 
 async function createCycle(data) {
+  if (data.startDate) data.startDate = new Date(data.startDate);
+  if (data.endDate) data.endDate = new Date(data.endDate);
   return prisma.appraisalCycle.create({ data });
 }
 
@@ -28,6 +30,8 @@ async function getCycleById(id) {
 async function updateCycle(id, data) {
   const cycle = await prisma.appraisalCycle.findUnique({ where: { id } });
   if (!cycle) throw new NotFoundError('Cycle');
+  if (data.startDate) data.startDate = new Date(data.startDate);
+  if (data.endDate) data.endDate = new Date(data.endDate);
   return prisma.appraisalCycle.update({ where: { id }, data });
 }
 
