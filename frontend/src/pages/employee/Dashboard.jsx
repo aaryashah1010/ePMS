@@ -37,6 +37,17 @@ export default function EmployeeDashboard() {
   const totalWeight = kpas.reduce((s, k) => s + k.weightage, 0);
   const submittedKpas = kpas.filter((k) => k.status === 'SUBMITTED').length;
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'SUBMITTED': return 'Appraisal under review by Reporting Officer';
+      case 'REPORTING_DONE': return 'Under review by Reviewing Officer';
+      case 'REVIEWING_DONE': return 'Under review by Accepting Officer';
+      case 'ACCEPTING_DONE': return 'Under review by HR';
+      case 'FINALIZED': return '✅ Appraisal completed — View your score';
+      default: return 'Draft / Not Submitted';
+    }
+  };
+
   return (
     <Layout>
       <div style={{ marginBottom: 24 }}>
@@ -67,7 +78,7 @@ export default function EmployeeDashboard() {
             <StatCard label="KPAs Defined" value={kpas.length} color="#2563eb" />
             <StatCard label="Total Weight" value={`${totalWeight}%`} color={Math.abs(totalWeight - 100) < 0.01 ? '#16a34a' : '#d97706'} />
             <StatCard label="KPAs Submitted" value={submittedKpas} color="#16a34a" />
-            <StatCard label="Final Score" value={appraisal?.finalScore ?? '—'} color="#7c3aed" />
+            <StatCard label="Final Score" value={appraisal?.status === 'FINALIZED' ? (appraisal?.finalScore ?? '—') : '—'} color="#7c3aed" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
@@ -98,7 +109,10 @@ export default function EmployeeDashboard() {
               {appraisal ? (
                 <div>
                   <Badge label={appraisal.status} />
-                  {appraisal.finalScore && (
+                  <p style={{ fontSize: 13, color: '#64748b', marginTop: 10, fontWeight: 500 }}>
+                    {getStatusLabel(appraisal.status)}
+                  </p>
+                  {appraisal.status === 'FINALIZED' && appraisal.finalScore && (
                     <div style={{ marginTop: 12 }}>
                       <div style={{ fontSize: 32, fontWeight: 800, color: '#2563eb' }}>{appraisal.finalScore}</div>
                       <Badge label={appraisal.ratingBand} />

@@ -64,6 +64,7 @@ export const kpaAPI = {
   submit: (cycleId) => api.post(`/kpa/cycle/${cycleId}/submit`),
   getTeam: (cycleId) => api.get(`/kpa/cycle/${cycleId}/team`),
   getEmployee: (cycleId, userId) => api.get(`/kpa/cycle/${cycleId}/employee/${userId}`),
+  review: (cycleId, userId, action, remarks) => api.post(`/kpa/cycle/${cycleId}/employee/${userId}/review`, { action, remarks }),
 };
 
 // --- Mid Year ---
@@ -72,7 +73,7 @@ export const midYearAPI = {
   save: (cycleId, data) => api.post(`/mid-year/cycle/${cycleId}`, data),
   submit: (cycleId) => api.post(`/mid-year/cycle/${cycleId}/submit`),
   getTeam: (cycleId) => api.get(`/mid-year/cycle/${cycleId}/team`),
-  addRemarks: (cycleId, userId, remarks) => api.post(`/mid-year/cycle/${cycleId}/employee/${userId}/remarks`, { remarks }),
+  addRemarks: (cycleId, userId, remarks, rating) => api.post(`/mid-year/cycle/${cycleId}/employee/${userId}/remarks`, { remarks, rating }),
   getEmployee: (cycleId, userId) => api.get(`/mid-year/cycle/${cycleId}/employee/${userId}`),
 };
 
@@ -97,6 +98,8 @@ export const reportAPI = {
   department: (cycleId, department) => api.get(`/reports/cycle/${cycleId}/department`, { params: { department } }),
   distribution: (cycleId) => api.get(`/reports/cycle/${cycleId}/distribution`),
   progress: (cycleId) => api.get(`/reports/cycle/${cycleId}/progress`),
+  exportIndividual: (cycleId, userId) => api.get(`/reports/cycle/${cycleId}/individual/${userId}/export`, { responseType: 'blob' }),
+  exportDepartment: (cycleId, department) => api.get(`/reports/cycle/${cycleId}/department/export`, { params: { department }, responseType: 'blob' }),
 };
 
 // --- Attributes ---

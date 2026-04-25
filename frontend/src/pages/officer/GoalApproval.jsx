@@ -4,36 +4,37 @@ import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
-import { kpaAPI, midYearAPI } from '../../services/api';
+import Button from '../../components/Button';
+import { kpaAPI } from '../../services/api';
 
 export default function GoalApproval() {
   const [cycleId, setCycleId] = useState('');
   const [kpas, setKpas] = useState([]);
-  const [midReviews, setMidReviews] = useState([]);
   const [msg, setMsg] = useState({ type: '', text: '' });
-  const [activeTab, setActiveTab] = useState('goals');
   const [remarkMap, setRemarkMap] = useState({});
   const [submitting, setSubmitting] = useState('');
 
   const load = async (cid) => {
     if (!cid) return;
-    const [k, m] = await Promise.allSettled([
-      kpaAPI.getTeam(cid),
-      midYearAPI.getTeam(cid),
-    ]);
-    if (k.status === 'fulfilled') setKpas(k.value.data.kpas || []);
-    if (m.status === 'fulfilled') setMidReviews(m.value.data.reviews || []);
+    try {
+      const k = await kpaAPI.getTeam(cid);
+      setKpas(k.data.kpas || []);
+    } catch (err) {
+      setKpas([]);
+    }
   };
 
   useEffect(() => { load(cycleId); }, [cycleId]);
 
-  const handleAddRemark = async (userId) => {
+  const handleReview = async (userId, action) => {
     const remarks = remarkMap[userId];
-    if (!remarks?.trim()) return setMsg({ type: 'error', text: 'Please enter remarks.' });
+    if (action === 'REJECT' && !remarks?.trim()) {
+      return setMsg({ type: 'error', text: 'Please enter remarks for rejection.' });
+    }
     setSubmitting(userId);
     try {
-      await midYearAPI.addRemarks(cycleId, userId, remarks);
-      setMsg({ type: 'success', text: 'Remarks added.' });
+      await kpaAPI.review(cycleId, userId, action, remarks);
+      setMsg({ type: 'success', text: `Goals ${action === 'ACCEPT' ? 'accepted' : 'rejected'}.` });
       load(cycleId);
       setRemarkMap((prev) => ({ ...prev, [userId]: '' }));
     } catch (err) {
@@ -51,7 +52,7 @@ export default function GoalApproval() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Goal & Mid-Year Review</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Goal Approvals</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} />
@@ -61,24 +62,13 @@ export default function GoalApproval() {
         <>
           <Alert type={msg.type || 'info'} message={msg.text} />
 
-          <div style={{ display: 'flex', gap: 0, marginBottom: 20, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', width: 'fit-content' }}>
-            {['goals', 'midyear'].map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '10px 24px', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600,
-                  background: activeTab === tab ? '#2563eb' : '#fff',
-                  color: activeTab === tab ? '#fff' : '#64748b',
-                }}>
-                {tab === 'goals' ? 'KPA Goals' : 'Mid-Year Reviews'}
-              </button>
-            ))}
-          </div>
-
-          {activeTab === 'goals' && (
-            Object.values(byEmployee).length === 0 ? (
-              <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs from team members.</p></Card>
-            ) : (
-              Object.values(byEmployee).map(({ user: emp, kpas: empKpas }) => (
+          {Object.values(byEmployee).length === 0 ? (
+            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs from team members.</p></Card>
+          ) : (
+            Object.values(byEmployee).map(({ user: emp, kpas: empKpas }) => {
+              const hasSubmitted = empKpas.some(k => k.status === 'SUBMITTED');
+              
+              return (
                 <Card key={emp.id} title={`${emp.name} (${emp.employeeCode || emp.email})`} style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>{emp.department}</div>
                   {empKpas.map((k) => (
@@ -94,46 +84,36 @@ export default function GoalApproval() {
                   <div style={{ marginTop: 8, fontSize: 13, color: '#64748b' }}>
                     Total weight: {empKpas.reduce((s, k) => s + k.weightage, 0)}%
                   </div>
-                </Card>
-              ))
-            )
-          )}
-
-          {activeTab === 'midyear' && (
-            midReviews.length === 0 ? (
-              <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No mid-year reviews submitted.</p></Card>
-            ) : (
-              midReviews.map((r) => (
-                <Card key={r.id} title={`${r.user?.name} — Mid-Year`} style={{ marginBottom: 16 }}>
-                  <Badge label={r.status} />
-                  <p style={{ marginTop: 12, fontSize: 14, color: '#1e293b' }}>{r.progress}</p>
-                  {r.selfRating && <p style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>Self Rating: {r.selfRating}</p>}
-                  {r.reportingRemarks && (
-                    <div style={{ marginTop: 12, background: '#f0fdf4', padding: 12, borderRadius: 8 }}>
-                      <strong style={{ fontSize: 13 }}>Your Remarks:</strong>
-                      <p style={{ fontSize: 13, marginTop: 4 }}>{r.reportingRemarks}</p>
-                    </div>
-                  )}
-                  {r.status === 'SUBMITTED' && (
-                    <div style={{ marginTop: 12 }}>
+                  
+                  {hasSubmitted && (
+                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
                       <textarea
-                        value={remarkMap[r.userId] || ''}
-                        onChange={(e) => setRemarkMap((prev) => ({ ...prev, [r.userId]: e.target.value }))}
-                        placeholder="Enter your remarks..."
-                        style={{ width: '100%', padding: 10, border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, height: 80, resize: 'vertical' }}
+                        value={remarkMap[emp.id] || ''}
+                        onChange={(e) => setRemarkMap((prev) => ({ ...prev, [emp.id]: e.target.value }))}
+                        placeholder="Enter remarks (required for rejection)..."
+                        style={{ width: '100%', padding: 10, border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, height: 80, resize: 'vertical', marginBottom: 10 }}
                       />
-                      <button
-                        onClick={() => handleAddRemark(r.userId)}
-                        disabled={submitting === r.userId}
-                        style={remarkBtnStyle}
-                      >
-                        {submitting === r.userId ? 'Saving...' : 'Add Remarks'}
-                      </button>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <Button 
+                          onClick={() => handleReview(emp.id, 'ACCEPT')} 
+                          disabled={submitting === emp.id}
+                          variant="success"
+                        >
+                          {submitting === emp.id ? 'Processing...' : 'Accept Goals'}
+                        </Button>
+                        <Button 
+                          onClick={() => handleReview(emp.id, 'REJECT')} 
+                          disabled={submitting === emp.id}
+                          variant="danger"
+                        >
+                          Reject with Remarks
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </Card>
-              ))
-            )
+              );
+            })
           )}
         </>
       )}
@@ -144,8 +124,4 @@ export default function GoalApproval() {
 const weightBadge = {
   display: 'inline-block', background: '#dbeafe', color: '#1d4ed8',
   padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700, marginTop: 4,
-};
-const remarkBtnStyle = {
-  marginTop: 8, padding: '8px 18px', background: '#2563eb', color: '#fff',
-  border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
 };

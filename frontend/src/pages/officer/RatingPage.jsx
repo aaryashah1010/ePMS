@@ -23,12 +23,18 @@ export default function RatingPage() {
   const [attributes, setAttributes] = useState([]);
   const [kpaRatings, setKpaRatings] = useState({});
   const [attrRatings, setAttrRatings] = useState({});
+  const [prevKpaRatings, setPrevKpaRatings] = useState({});
+  const [prevAttrRatings, setPrevAttrRatings] = useState({});
   const [remarks, setRemarks] = useState('');
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
 
   const action = ACTION_MAP[user?.role];
+  
+  let prevRatingLabel = "Previous Officer's Rating";
+  if (user?.role === 'REVIEWING_OFFICER') prevRatingLabel = "Reporting Officer's Rating";
+  else if (user?.role === 'ACCEPTING_OFFICER') prevRatingLabel = "Reviewing Officer's Rating";
 
   const loadAppraisals = async (cid) => {
     if (!cid) return;
@@ -57,14 +63,39 @@ export default function RatingPage() {
     const kpaList = kpaRes.data.kpas || [];
     setKpas(kpaList);
 
-    // Pre-fill existing ratings
+    // Pre-fill existing ratings and track previous ratings
     const kpaMap = {};
-    for (const r of appraisal.kpaRatings || []) kpaMap[r.kpaGoalId] = { rating: r.rating, remarks: r.remarks || '' };
-    setKpaRatings(kpaMap);
+    const prevKpaMap = {};
+    const sortedKpa = [...(appraisal.kpaRatings || [])].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
+    for (const r of sortedKpa) {
+      if (r.ratedBy === user.id) kpaMap[r.kpaGoalId] = { rating: r.rating, remarks: r.remarks || '' };
+      else prevKpaMap[r.kpaGoalId] = r;
+    }
 
     const attrMap = {};
-    for (const r of appraisal.attributeRatings || []) attrMap[r.attributeId] = { rating: r.rating, remarks: r.remarks || '' };
+    const prevAttrMap = {};
+    const sortedAttr = [...(appraisal.attributeRatings || [])].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
+    for (const r of sortedAttr) {
+      if (r.ratedBy === user.id) attrMap[r.attributeId] = { rating: r.rating, remarks: r.remarks || '' };
+      else prevAttrMap[r.attributeId] = r;
+    }
+
+    // Default current inputs to previous ratings if not already rated
+    for (const k of kpaList) {
+      if (!kpaMap[k.id] && prevKpaMap[k.id]) {
+        kpaMap[k.id] = { rating: prevKpaMap[k.id].rating, remarks: prevKpaMap[k.id].remarks || '' };
+      }
+    }
+    for (const a of appraisal.attributeRatings || []) {
+      if (!attrMap[a.attributeId] && prevAttrMap[a.attributeId]) {
+        attrMap[a.attributeId] = { rating: prevAttrMap[a.attributeId].rating, remarks: prevAttrMap[a.attributeId].remarks || '' };
+      }
+    }
+
+    setKpaRatings(kpaMap);
+    setPrevKpaRatings(prevKpaMap);
     setAttrRatings(attrMap);
+    setPrevAttrRatings(prevAttrMap);
   };
 
   const loadFull = async (ap) => {
@@ -94,6 +125,15 @@ export default function RatingPage() {
     if (!window.confirm(`${action.actionLabel}?`)) return;
     setActing(true);
     try {
+      // Auto-save ratings silently before submitting the action
+      const kpaPayload = Object.entries(kpaRatings).map(([kpaGoalId, v]) => ({ kpaGoalId, rating: parseFloat(v.rating), remarks: v.remarks }));
+      const attrPayload = Object.entries(attrRatings).map(([attributeId, v]) => ({ attributeId, rating: parseFloat(v.rating), remarks: v.remarks }));
+      
+      await Promise.all([
+        kpaPayload.length ? appraisalAPI.saveKpaRatings(selected.id, kpaPayload) : Promise.resolve(),
+        attrPayload.length ? appraisalAPI.saveAttributeRatings(selected.id, attrPayload) : Promise.resolve(),
+      ]);
+
       await appraisalAPI[action.handler](cycleId, selected.user.id, remarks);
       setMsg({ type: 'success', text: `${action.actionLabel} done.` });
       setSelected(null);
@@ -105,13 +145,15 @@ export default function RatingPage() {
 
   const valuesAttrs = attributes.filter((a) => a.type === 'VALUES');
   const competencyAttrs = attributes.filter((a) => a.type === 'COMPETENCIES');
+  
+  const isEditable = action && selected?.status === action.requiredStatus;
 
   return (
     <Layout>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Rate Appraisals</h1>
 
       <div style={{ marginBottom: 20 }}>
-        <CycleSelector value={cycleId} onChange={setCycleId} />
+        <CycleSelector value={cycleId} onChange={setCycleId} minPhase="ANNUAL_APPRAISAL" />
       </div>
 
       {cycleId && (
@@ -166,21 +208,32 @@ export default function RatingPage() {
 
           {/* KPA Ratings */}
           {kpas.length > 0 && (
-            <Card title="Rate KPAs (1–5)" style={{ marginBottom: 16 }}>
+            <Card title="Rate KPAs (0 – Weightage)" style={{ marginBottom: 16 }}>
               {kpas.map((k) => (
                 <div key={k.id} style={{ padding: '14px 0', borderBottom: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14 }}>{k.title}</div>
                       <span style={weightBadge}>{k.weightage}%</span>
+                      {prevKpaRatings[k.id] && (
+                        <div style={{ fontSize: 12, color: '#d97706', marginTop: 4, fontWeight: 600 }}>
+                          {prevRatingLabel}: {prevKpaRatings[k.id].rating}
+                        </div>
+                      )}
                     </div>
-                    <input
-                      type="number" min="1" max="5" step="0.1"
-                      value={kpaRatings[k.id]?.rating || ''}
-                      onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: e.target.value } }))}
-                      placeholder="1–5"
-                      style={ratingInputStyle}
-                    />
+                    <div style={{ textAlign: 'right' }}>
+                      {prevKpaRatings[k.id] && isEditable && (
+                        <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Accept or Override?</div>
+                      )}
+                      <input
+                        type="number" min="0" max={k.weightage} step="0.1"
+                        value={kpaRatings[k.id]?.rating || ''}
+                        onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: Math.min(Math.max(0, e.target.value), k.weightage) } }))}
+                        placeholder={`Max ${k.weightage}`}
+                        style={ratingInputStyle}
+                        disabled={!isEditable}
+                      />
+                    </div>
                   </div>
                   <input
                     type="text"
@@ -188,6 +241,7 @@ export default function RatingPage() {
                     onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], remarks: e.target.value } }))}
                     placeholder="Remarks (optional)"
                     style={{ width: '100%', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
+                    disabled={!isEditable}
                   />
                 </div>
               ))}
@@ -202,17 +256,38 @@ export default function RatingPage() {
                   <div key={label} style={{ marginBottom: 20 }}>
                     <h4 style={{ fontSize: 14, fontWeight: 700, color: '#1e3a5f', marginBottom: 12 }}>{label}</h4>
                     {list.map((attr) => (
-                      <div key={attr.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 500 }}>{attr.name}</div>
-                          <div style={{ fontSize: 12, color: '#94a3b8' }}>{attr.description}</div>
+                      <div key={attr.id} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500 }}>{attr.name}</div>
+                            <div style={{ fontSize: 12, color: '#94a3b8' }}>{attr.description}</div>
+                            {prevAttrRatings[attr.id] && (
+                              <div style={{ fontSize: 12, color: '#d97706', marginTop: 4, fontWeight: 600 }}>
+                                {prevRatingLabel}: {prevAttrRatings[attr.id].rating}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            {prevAttrRatings[attr.id] && isEditable && (
+                              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Accept or Override?</div>
+                            )}
+                            <input
+                              type="number" min="1" max="5" step="0.1"
+                              value={attrRatings[attr.id]?.rating || ''}
+                              onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { rating: e.target.value } }))}
+                              placeholder="1–5"
+                              style={ratingInputStyle}
+                              disabled={!isEditable}
+                            />
+                          </div>
                         </div>
                         <input
-                          type="number" min="1" max="5" step="0.1"
-                          value={attrRatings[attr.id]?.rating || ''}
-                          onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { rating: e.target.value } }))}
-                          placeholder="1–5"
-                          style={ratingInputStyle}
+                          type="text"
+                          value={attrRatings[attr.id]?.remarks || ''}
+                          onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { ...p[attr.id], remarks: e.target.value } }))}
+                          placeholder="Remarks (optional)"
+                          style={{ width: '100%', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
+                          disabled={!isEditable}
                         />
                       </div>
                     ))}
@@ -233,15 +308,18 @@ export default function RatingPage() {
                   onChange={(e) => setRemarks(e.target.value)}
                   placeholder="Your assessment remarks..."
                   style={{ width: '100%', padding: 10, border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, height: 80, resize: 'vertical' }}
+                  disabled={!isEditable}
                 />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-              <Button onClick={handleSaveRatings} loading={saving} variant="outline">Save Ratings</Button>
-              {action && selected.status === action.requiredStatus && (
-                <Button onClick={handleAction} loading={acting} variant="success">
-                  {action.actionLabel}
-                </Button>
+              {isEditable && (
+                <>
+                  <Button onClick={handleSaveRatings} loading={saving} variant="outline">Save Draft Ratings</Button>
+                  <Button onClick={handleAction} loading={acting} variant="success">
+                    {action.actionLabel}
+                  </Button>
+                </>
               )}
             </div>
           </Card>

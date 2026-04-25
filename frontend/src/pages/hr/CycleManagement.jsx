@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 const EMPTY_FORM = {
   name: '', year: new Date().getFullYear(), phase: 'GOAL_SETTING',
   startDate: '', endDate: '', description: '',
+  kpaWeight: 60, valuesWeight: 20, competenciesWeight: 20
 };
 
 const PHASES = ['GOAL_SETTING', 'MID_YEAR_REVIEW', 'ANNUAL_APPRAISAL'];
@@ -31,9 +32,21 @@ export default function CycleManagement() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    const totalWeight = Number(form.kpaWeight) + Number(form.valuesWeight) + Number(form.competenciesWeight);
+    if (totalWeight !== 100) {
+      setMsg({ type: 'error', text: `Weights must total 100. Current: ${totalWeight}` });
+      return;
+    }
+
     setLoading(true);
     try {
-      await cycleAPI.create({ ...form, year: parseInt(form.year) });
+      await cycleAPI.create({ 
+        ...form, 
+        year: parseInt(form.year),
+        kpaWeight: parseFloat(form.kpaWeight),
+        valuesWeight: parseFloat(form.valuesWeight),
+        competenciesWeight: parseFloat(form.competenciesWeight)
+      });
       setMsg({ type: 'success', text: 'Cycle created.' });
       setForm(EMPTY_FORM);
       setShowForm(false);
@@ -113,6 +126,23 @@ export default function CycleManagement() {
                 <input type="date" style={inputStyle} value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} required />
               </div>
             </div>
+            
+            <h4 style={{ fontSize: 14, fontWeight: 700, margin: '16px 0 10px', color: '#1e3a5f' }}>Score Weights (%)</h4>
+            <div style={gridStyle}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>KPA Weight</label>
+                <input type="number" style={inputStyle} value={form.kpaWeight} onChange={(e) => setForm({ ...form, kpaWeight: e.target.value })} required />
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Values Weight</label>
+                <input type="number" style={inputStyle} value={form.valuesWeight} onChange={(e) => setForm({ ...form, valuesWeight: e.target.value })} required />
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Competencies Weight</label>
+                <input type="number" style={inputStyle} value={form.competenciesWeight} onChange={(e) => setForm({ ...form, competenciesWeight: e.target.value })} required />
+              </div>
+            </div>
+
             <div style={fieldStyle}>
               <label style={labelStyle}>Description</label>
               <textarea style={{ ...inputStyle, height: 60, resize: 'vertical' }} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional description" />

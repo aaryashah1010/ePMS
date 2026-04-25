@@ -7,7 +7,9 @@ router.use(authenticate);
 router.use(authorize('HR', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'));
 
 router.get('/cycle/:cycleId/individual/:userId', ctrl.individualReport);
+router.get('/cycle/:cycleId/individual/:userId/export', ctrl.exportIndividualPDF);
 router.get('/cycle/:cycleId/department', ctrl.departmentSummary);
+router.get('/cycle/:cycleId/department/export', ctrl.exportDepartmentExcel);
 router.get('/cycle/:cycleId/distribution', ctrl.ratingDistribution);
 router.get('/cycle/:cycleId/progress', ctrl.cycleProgress);
 

@@ -1,4 +1,5 @@
 const reportService = require('../services/reportService');
+const { generateIndividualPDF, generateDepartmentExcel } = require('../utils/exportService');
 
 async function individualReport(req, res, next) {
   try {
@@ -33,4 +34,21 @@ async function cycleProgress(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { individualReport, departmentSummary, ratingDistribution, cycleProgress };
+async function exportIndividualPDF(req, res, next) {
+  try {
+    const { userId, cycleId } = req.params;
+    const report = await reportService.individualReport(userId, cycleId);
+    generateIndividualPDF(report, res);
+  } catch (err) { next(err); }
+}
+
+async function exportDepartmentExcel(req, res, next) {
+  try {
+    const { cycleId } = req.params;
+    const { department } = req.query;
+    const summary = await reportService.departmentSummary(cycleId, department);
+    await generateDepartmentExcel(summary, res);
+  } catch (err) { next(err); }
+}
+
+module.exports = { individualReport, departmentSummary, ratingDistribution, cycleProgress, exportIndividualPDF, exportDepartmentExcel };

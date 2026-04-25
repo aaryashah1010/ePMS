@@ -68,7 +68,7 @@ export default function MidYearReview() {
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Review</h1>
 
       <div style={{ marginBottom: 20 }}>
-        <CycleSelector value={cycleId} onChange={setCycleId} />
+        <CycleSelector value={cycleId} onChange={setCycleId} minPhase="MID_YEAR_REVIEW" />
       </div>
 
       {cycleId && (

@@ -12,8 +12,20 @@ async function createUser(data) {
   const user = await prisma.user.create({
     data: { ...data, password },
     select: { id: true, name: true, email: true, role: true, department: true,
-              employeeCode: true, reportingOfficerId: true, isActive: true, createdAt: true },
+              employeeCode: true, reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true, isActive: true, createdAt: true },
   });
+
+  if (user.reportingOfficerId || user.reviewingOfficerId || user.acceptingOfficerId) {
+    await prisma.reportingHistory.create({
+      data: {
+        userId: user.id,
+        reportingOfficerId: user.reportingOfficerId,
+        reviewingOfficerId: user.reviewingOfficerId,
+        acceptingOfficerId: user.acceptingOfficerId,
+      }
+    });
+  }
+
   return user;
 }
 
@@ -53,12 +65,35 @@ async function updateUser(id, data) {
     data.password = await bcrypt.hash(data.password, rounds);
   }
 
-  return prisma.user.update({
+  const officerChanged = 
+    (data.reportingOfficerId !== undefined && data.reportingOfficerId !== user.reportingOfficerId) ||
+    (data.reviewingOfficerId !== undefined && data.reviewingOfficerId !== user.reviewingOfficerId) ||
+    (data.acceptingOfficerId !== undefined && data.acceptingOfficerId !== user.acceptingOfficerId);
+
+  const updatedUser = await prisma.user.update({
     where: { id },
     data,
     select: { id: true, name: true, email: true, role: true, department: true,
-              employeeCode: true, reportingOfficerId: true, isActive: true, updatedAt: true },
+              employeeCode: true, reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true, isActive: true, updatedAt: true },
   });
+
+  if (officerChanged) {
+    await prisma.reportingHistory.updateMany({
+      where: { userId: id, endDate: null },
+      data: { endDate: new Date() }
+    });
+    
+    await prisma.reportingHistory.create({
+      data: {
+        userId: id,
+        reportingOfficerId: updatedUser.reportingOfficerId,
+        reviewingOfficerId: updatedUser.reviewingOfficerId,
+        acceptingOfficerId: updatedUser.acceptingOfficerId,
+      }
+    });
+  }
+
+  return updatedUser;
 }
 
 async function getReportees(officerId) {

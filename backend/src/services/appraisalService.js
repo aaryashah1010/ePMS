@@ -72,8 +72,8 @@ async function saveKpaRatings(ratedBy, appraisalId, ratings) {
   // Upsert each KPA rating
   const ops = ratings.map(({ kpaGoalId, rating, remarks }) =>
     prisma.kpaRating.upsert({
-      where: { annualAppraisalId_kpaGoalId: { annualAppraisalId: appraisalId, kpaGoalId } },
-      update: { rating, remarks, ratedBy },
+      where: { annualAppraisalId_kpaGoalId_ratedBy: { annualAppraisalId: appraisalId, kpaGoalId, ratedBy } },
+      update: { rating, remarks },
       create: { annualAppraisalId: appraisalId, kpaGoalId, rating, remarks: remarks || null, ratedBy },
     })
   );
@@ -83,8 +83,8 @@ async function saveKpaRatings(ratedBy, appraisalId, ratings) {
 async function saveAttributeRatings(ratedBy, appraisalId, ratings) {
   const ops = ratings.map(({ attributeId, rating, remarks }) =>
     prisma.attributeRating.upsert({
-      where: { annualAppraisalId_attributeId: { annualAppraisalId: appraisalId, attributeId } },
-      update: { rating, remarks, ratedBy },
+      where: { annualAppraisalId_attributeId_ratedBy: { annualAppraisalId: appraisalId, attributeId, ratedBy } },
+      update: { rating, remarks },
       create: { annualAppraisalId: appraisalId, attributeId, rating, remarks: remarks || null, ratedBy },
     })
   );
@@ -137,10 +137,14 @@ async function advanceAppraisalStatus(officerId, userId, cycleId, remarks, expec
   // Compute scores at final stage (ACCEPTING_DONE → FINALIZED)
   if (next === 'FINALIZED') {
     const kpaGoals = await prisma.kpaGoal.findMany({ where: { userId, cycleId } });
+    const cycle = await prisma.appraisalCycle.findUnique({ where: { id: cycleId } });
+    
     const kpaScore = computeKpaScore(kpaGoals, appraisal.kpaRatings);
     const valuesScore = computeAttributeScore(appraisal.attributeRatings, 'VALUES');
     const competenciesScore = computeAttributeScore(appraisal.attributeRatings, 'COMPETENCIES');
-    const finalScore = computeFinalScore(kpaScore, valuesScore, competenciesScore);
+    
+    const weights = { kpa: cycle.kpaWeight, values: cycle.valuesWeight, competencies: cycle.competenciesWeight };
+    const finalScore = computeFinalScore(kpaScore, valuesScore, competenciesScore, weights);
     const ratingBand = getRatingBand(finalScore);
 
     updateData = {
@@ -188,12 +192,15 @@ async function hrFinalizeAll(cycleId) {
     },
   });
 
+  const cycle = await prisma.appraisalCycle.findUnique({ where: { id: cycleId } });
+  const weights = { kpa: cycle.kpaWeight, values: cycle.valuesWeight, competencies: cycle.competenciesWeight };
+
   const ops = pending.map(async (appraisal) => {
     const kpaGoals = await prisma.kpaGoal.findMany({ where: { userId: appraisal.userId, cycleId } });
     const kpaScore = computeKpaScore(kpaGoals, appraisal.kpaRatings);
     const valuesScore = computeAttributeScore(appraisal.attributeRatings, 'VALUES');
     const competenciesScore = computeAttributeScore(appraisal.attributeRatings, 'COMPETENCIES');
-    const finalScore = computeFinalScore(kpaScore, valuesScore, competenciesScore);
+    const finalScore = computeFinalScore(kpaScore, valuesScore, competenciesScore, weights);
     return prisma.annualAppraisal.update({
       where: { id: appraisal.id },
       data: { status: 'FINALIZED', kpaScore, valuesScore, competenciesScore, finalScore, ratingBand: getRatingBand(finalScore), finalizedAt: new Date() },

@@ -40,7 +40,7 @@ async function getMidYearById(userId, cycleId) {
   });
 }
 
-async function addReportingRemarks(officerId, userId, cycleId, remarks) {
+async function addReportingRemarks(officerId, userId, cycleId, remarks, managerRating) {
   const review = await prisma.midYearReview.findUnique({
     where: { userId_cycleId: { userId, cycleId } },
     include: { user: true },
@@ -49,9 +49,14 @@ async function addReportingRemarks(officerId, userId, cycleId, remarks) {
   if (review.user.reportingOfficerId !== officerId) throw new ForbiddenError('Not the reporting officer for this employee');
   if (review.status !== 'SUBMITTED') throw new ValidationError('Employee has not submitted their mid-year review');
 
+  const data = { reportingRemarks: remarks, status: 'REPORTING_DONE' };
+  if (managerRating !== undefined && managerRating !== null) {
+    data.managerRating = parseFloat(managerRating);
+  }
+
   return prisma.midYearReview.update({
     where: { userId_cycleId: { userId, cycleId } },
-    data: { reportingRemarks: remarks, status: 'REPORTING_DONE' },
+    data,
   });
 }
 

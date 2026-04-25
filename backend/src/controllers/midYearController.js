@@ -27,8 +27,8 @@ async function getMyMidYear(req, res, next) {
 async function addRemarks(req, res, next) {
   try {
     const { userId } = req.params;
-    const { remarks } = req.body;
-    const review = await midYearService.addReportingRemarks(req.user.id, userId, req.params.cycleId, remarks);
+    const { remarks, rating } = req.body;
+    const review = await midYearService.addReportingRemarks(req.user.id, userId, req.params.cycleId, remarks, rating);
     await logAudit({ userId: req.user.id, action: 'ADD_MID_YEAR_REMARKS', entity: 'MidYearReview', entityId: review.id });
     res.json({ success: true, review });
   } catch (err) { next(err); }

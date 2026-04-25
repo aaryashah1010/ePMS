@@ -54,4 +54,13 @@ async function getEmployeeKpas(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { createKpa, getMyKpas, updateKpa, deleteKpa, submitKpas, getKpasForOfficer, getEmployeeKpas };
+async function reviewKpas(req, res, next) {
+  try {
+    const { action, remarks } = req.body;
+    const result = await kpaService.reviewKpas(req.user.id, req.params.cycleId, req.params.userId, action, remarks);
+    await logAudit({ userId: req.user.id, action: `REVIEW_KPAS_${action}`, entity: 'KpaGoal', entityId: req.params.userId });
+    res.json({ success: true, ...result });
+  } catch (err) { next(err); }
+}
+
+module.exports = { createKpa, getMyKpas, updateKpa, deleteKpa, submitKpas, getKpasForOfficer, getEmployeeKpas, reviewKpas };

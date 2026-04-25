@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { cycleAPI } from '../services/api';
 
-export default function CycleSelector({ value, onChange, style = {} }) {
+const PHASE_ORDER = {
+  'GOAL_SETTING': 1,
+  'MID_YEAR_REVIEW': 2,
+  'ANNUAL_APPRAISAL': 3
+};
+
+export default function CycleSelector({ value, onChange, style = {}, minPhase }) {
   const [cycles, setCycles] = useState([]);
 
   useEffect(() => {
-    cycleAPI.getAll().then((r) => setCycles(r.data.cycles || [])).catch(() => {});
-  }, []);
+    cycleAPI.getAll().then((r) => {
+      let list = r.data.cycles || [];
+      if (minPhase) {
+        list = list.filter((c) => PHASE_ORDER[c.phase] >= PHASE_ORDER[minPhase]);
+      }
+      setCycles(list);
+    }).catch(() => {});
+  }, [minPhase]);
 
   return (
     <select

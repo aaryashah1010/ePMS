@@ -10,38 +10,78 @@
 function computeKpaScore(kpaGoals, kpaRatings) {
   if (!kpaRatings || kpaRatings.length === 0) return null;
 
-  let weightedSum = 0;
+  // Group ratings by KPA
+  const groups = {};
   for (const rating of kpaRatings) {
-    const goal = kpaGoals.find((g) => g.id === rating.kpaGoalId);
-    if (goal) {
-      weightedSum += (goal.weightage * rating.rating);
+    if (!groups[rating.kpaGoalId]) groups[rating.kpaGoalId] = [];
+    groups[rating.kpaGoalId].push(rating); // Store the full rating object to sort by date
+  }
+
+  let totalScore = 0;
+  for (const goal of kpaGoals) {
+    const ratingsForGoal = groups[goal.id];
+    if (ratingsForGoal && ratingsForGoal.length > 0) {
+      // Sort descending by updatedAt to get the most recent rating (final accepted rating)
+      ratingsForGoal.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      const finalRating = ratingsForGoal[0].rating;
+      totalScore += finalRating;
     }
   }
-  return parseFloat((weightedSum / 100).toFixed(2));
+
+  return parseFloat(totalScore.toFixed(2));
 }
 
 function computeAttributeScore(attributeRatings, type) {
   const filtered = attributeRatings.filter((r) => r.attribute && r.attribute.type === type);
   if (filtered.length === 0) return null;
-  const avg = filtered.reduce((s, r) => s + r.rating, 0) / filtered.length;
-  return parseFloat(avg.toFixed(2));
+
+  // Group by attributeId
+  const groups = {};
+  for (const r of filtered) {
+    if (!groups[r.attributeId]) groups[r.attributeId] = [];
+    groups[r.attributeId].push(r);
+  }
+
+  let totalRating = 0;
+  let count = 0;
+
+  for (const attrId in groups) {
+    const ratingsForAttr = groups[attrId];
+    if (ratingsForAttr && ratingsForAttr.length > 0) {
+      ratingsForAttr.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      totalRating += ratingsForAttr[0].rating;
+      count++;
+    }
+  }
+
+  if (count === 0) return null;
+
+  const avg1to5 = totalRating / count;
+  const outOf100 = (avg1to5 / 5) * 100;
+  return parseFloat(outOf100.toFixed(2));
 }
 
-function computeFinalScore(kpaScore, valuesScore, competenciesScore) {
+function computeFinalScore(kpaScore, valuesScore, competenciesScore, weights) {
   if (kpaScore === null) return null;
   const vs = valuesScore ?? 0;
   const cs = competenciesScore ?? 0;
-  const score = (kpaScore * 0.60) + (vs * 0.20) + (cs * 0.20);
+  
+  // Weights are in percentages (e.g., 60, 20, 20)
+  const kW = (weights?.kpa ?? 60) / 100;
+  const vW = (weights?.values ?? 20) / 100;
+  const cW = (weights?.competencies ?? 20) / 100;
+
+  const score = (kpaScore * kW) + (vs * vW) + (cs * cW);
   return parseFloat(score.toFixed(2));
 }
 
 function getRatingBand(score) {
   if (score === null) return null;
-  if (score < 2) return 'Poor';
-  if (score < 3) return 'Below Average';
-  if (score < 4) return 'Average';
-  if (score < 5) return 'Good';
-  return 'Outstanding';
+  if (score >= 90) return 'Outstanding';
+  if (score >= 70) return 'Very Good';
+  if (score >= 60) return 'Good';
+  if (score >= 50) return 'Average';
+  return 'Below Average / Poor';
 }
 
 module.exports = { computeKpaScore, computeAttributeScore, computeFinalScore, getRatingBand };

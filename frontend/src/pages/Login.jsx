@@ -76,6 +76,8 @@ export default function Login() {
           {[
             ['HR Admin', 'hr@epms.com', 'hr@123'],
             ['Reporting Officer', 'teamlead@epms.com', 'teamlead@123'],
+            ['Reviewing Officer', 'manager@epms.com', 'manager@123'],
+            ['Accepting Officer', 'director@epms.com', 'director@123'],
             ['Employee', 'alice@epms.com', 'alice@123'],
           ].map(([role, email, pass]) => (
             <button

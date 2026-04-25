@@ -16,6 +16,7 @@ import SelfAppraisal from './pages/employee/SelfAppraisal';
 // Officer
 import OfficerDashboard from './pages/officer/Dashboard';
 import GoalApproval from './pages/officer/GoalApproval';
+import OfficerMidYear from './pages/officer/OfficerMidYear';
 import RatingPage from './pages/officer/RatingPage';
 
 // HR
@@ -25,7 +26,7 @@ import UserManagement from './pages/hr/UserManagement';
 import Reports from './pages/hr/Reports';
 import AttributeManagement from './pages/hr/AttributeManagement';
 
-const EMP = ['EMPLOYEE'];
+const EMP = ['EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'];
 const OFF = ['REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'];
 const OFF_RO = ['REPORTING_OFFICER'];
 const HR = ['HR'];
@@ -58,7 +59,7 @@ export default function App() {
           {/* Officers */}
           <Route path="/officer/dashboard" element={<ProtectedRoute roles={OFF}><OfficerDashboard /></ProtectedRoute>} />
           <Route path="/officer/goals" element={<ProtectedRoute roles={OFF_RO}><GoalApproval /></ProtectedRoute>} />
-          <Route path="/officer/mid-year" element={<ProtectedRoute roles={OFF_RO}><GoalApproval /></ProtectedRoute>} />
+          <Route path="/officer/mid-year" element={<ProtectedRoute roles={OFF_RO}><OfficerMidYear /></ProtectedRoute>} />
           <Route path="/officer/ratings" element={<ProtectedRoute roles={OFF}><RatingPage /></ProtectedRoute>} />
 
           {/* HR */}

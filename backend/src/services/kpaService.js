@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { NotFoundError, ValidationError, ForbiddenError } = require('../utils/errors');
+const { sendEmail } = require('../utils/emailService');
 
 async function createKpa(userId, cycleId, data) {
   const cycle = await prisma.appraisalCycle.findUnique({ where: { id: cycleId } });
@@ -73,6 +74,20 @@ async function submitKpas(userId, cycleId) {
     data: { status: 'SUBMITTED', submittedAt: new Date() },
   });
 
+  // Fetch reporting officer to send email
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { reportingOfficer: true }
+  });
+
+  if (user && user.reportingOfficer) {
+    await sendEmail(
+      user.reportingOfficer.email,
+      `Action Required: Goals Submitted by ${user.name}`,
+      `Hello ${user.reportingOfficer.name},\n\nYour reportee ${user.name} has submitted their KPA goals for review.\nPlease log in to the e-PMS to review them.`
+    );
+  }
+
   return { message: 'KPAs submitted successfully', count: kpas.length };
 }
 
@@ -89,4 +104,48 @@ async function getKpasForOfficer(officerId, cycleId) {
   });
 }
 
-module.exports = { createKpa, getKpas, getKpaById, updateKpa, deleteKpa, submitKpas, getKpasForOfficer };
+async function reviewKpas(officerId, cycleId, employeeId, action, remarks) {
+  // Check if officer actually is the reporting officer
+  const employee = await prisma.user.findUnique({ where: { id: employeeId } });
+  if (!employee) throw new NotFoundError('Employee');
+  if (employee.reportingOfficerId !== officerId) throw new ForbiddenError('You are not the reporting officer for this employee');
+
+  const kpas = await prisma.kpaGoal.findMany({
+    where: { userId: employeeId, cycleId, status: 'SUBMITTED' }
+  });
+
+  if (kpas.length === 0) throw new ValidationError('No submitted KPAs found for this employee');
+
+  if (action === 'ACCEPT') {
+    await prisma.kpaGoal.updateMany({
+      where: { userId: employeeId, cycleId, status: 'SUBMITTED' },
+      data: { status: 'REPORTING_DONE', reportingRemarks: null }
+    });
+    
+    await sendEmail(
+      employee.email,
+      `Goals Accepted`,
+      `Hello ${employee.name},\n\nYour KPA goals have been accepted by your Reporting Officer.`
+    );
+
+    return { message: 'Goals accepted successfully' };
+  } else if (action === 'REJECT') {
+    if (!remarks) throw new ValidationError('Remarks are required for rejection');
+    await prisma.kpaGoal.updateMany({
+      where: { userId: employeeId, cycleId, status: 'SUBMITTED' },
+      data: { status: 'DRAFT', reportingRemarks: remarks }
+    });
+
+    await sendEmail(
+      employee.email,
+      `Action Required: Goals Rejected`,
+      `Hello ${employee.name},\n\nYour KPA goals have been rejected by your Reporting Officer.\nRemarks: ${remarks}\n\nPlease log in to the e-PMS, update your goals, and resubmit them.`
+    );
+
+    return { message: 'Goals rejected and sent back to draft' };
+  } else {
+    throw new ValidationError('Invalid action');
+  }
+}
+
+module.exports = { createKpa, getKpas, getKpaById, updateKpa, deleteKpa, submitKpas, getKpasForOfficer, reviewKpas };

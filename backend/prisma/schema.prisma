@@ -58,9 +58,24 @@ model User {
   midYearReviews     MidYearReview[]
   annualAppraisals   AnnualAppraisal[]
   auditLogs          AuditLog[]
+  reportingHistory   ReportingHistory[] @relation("UserHistory")
 
   @@index([role])
   @@index([department])
+}
+
+model ReportingHistory {
+  id                 String    @id @default(uuid())
+  userId             String
+  reportingOfficerId String?
+  reviewingOfficerId String?
+  acceptingOfficerId String?
+  startDate          DateTime  @default(now())
+  endDate            DateTime?
+  
+  user               User      @relation("UserHistory", fields: [userId], references: [id])
+  
+  @@index([userId])
 }
 
 model AppraisalCycle {
@@ -72,6 +87,9 @@ model AppraisalCycle {
   startDate   DateTime
   endDate     DateTime
   description String?
+  kpaWeight          Float @default(60)
+  valuesWeight       Float @default(20)
+  competenciesWeight Float @default(20)
   createdBy   String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -91,10 +109,11 @@ model KpaGoal {
   title       String
   description String?
   weightage   Float
-  status      AppraisalStatus @default(DRAFT)
-  submittedAt DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  status           AppraisalStatus @default(DRAFT)
+  reportingRemarks String?
+  submittedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   user       User           @relation(fields: [userId], references: [id])
   cycle      AppraisalCycle @relation(fields: [cycleId], references: [id])
@@ -107,9 +126,10 @@ model MidYearReview {
   id               String          @id @default(uuid())
   userId           String
   cycleId          String
-  progress         String
+  progress         String?
   selfRating       Float?
   reportingRemarks String?
+  managerRating    Float?
   status           AppraisalStatus @default(DRAFT)
   submittedAt      DateTime?
   createdAt        DateTime        @default(now())
@@ -171,7 +191,7 @@ model KpaRating {
   annualAppraisal AnnualAppraisal @relation(fields: [annualAppraisalId], references: [id])
   kpaGoal         KpaGoal         @relation(fields: [kpaGoalId], references: [id])
 
-  @@unique([annualAppraisalId, kpaGoalId])
+  @@unique([annualAppraisalId, kpaGoalId, ratedBy])
 }
 
 model AttributeMaster {
@@ -200,7 +220,7 @@ model AttributeRating {
   annualAppraisal AnnualAppraisal @relation(fields: [annualAppraisalId], references: [id])
   attribute       AttributeMaster @relation(fields: [attributeId], references: [id])
 
-  @@unique([annualAppraisalId, attributeId])
+  @@unique([annualAppraisalId, attributeId, ratedBy])
 }
 
 model AuditLog {

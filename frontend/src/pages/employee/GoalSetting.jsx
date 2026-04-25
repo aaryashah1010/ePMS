@@ -31,6 +31,35 @@ export default function GoalSetting() {
 
   useEffect(() => { loadKpas(cycleId); }, [cycleId]);
 
+  // Auto-save drafts
+  useEffect(() => {
+    if (!cycleId || isSubmitted || (!form.title && !form.description && !form.weightage)) return;
+    
+    const interval = setInterval(async () => {
+      // Only auto-save if title and weightage are present
+      if (form.title && form.weightage) {
+        try {
+          if (editId) {
+            await kpaAPI.update(editId, { ...form, weightage: parseFloat(form.weightage) });
+          } else {
+            const res = await kpaAPI.create(cycleId, { ...form, weightage: parseFloat(form.weightage) });
+            setEditId(res.data.kpa.id); // set editId so subsequent auto-saves update it
+          }
+          setMsg({ type: 'success', text: 'Draft auto-saved.' });
+          loadKpas(cycleId);
+        } catch (err) {
+          // silent fail for auto-save, or we can log it
+          console.error("Auto-save failed", err);
+        }
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [cycleId, form, editId, isSubmitted]);
+
+  // Check for rejection remarks
+  const rejectionRemarks = kpas.find(k => k.status === 'DRAFT' && k.reportingRemarks)?.reportingRemarks;
+
   const handleSubmitForm = async (e) => {
     e.preventDefault();
     setMsg({ type: '', text: '' });
@@ -90,6 +119,16 @@ export default function GoalSetting() {
       {cycleId && (
         <>
           <Alert type={msg.type || 'info'} message={msg.text} />
+          {rejectionRemarks && (
+            <div style={{ marginBottom: 20, background: '#fef2f2', border: '1px solid #f87171', borderRadius: 8, padding: 16 }}>
+              <h4 style={{ margin: 0, color: '#b91c1c', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 20 }}>⚠️</span> Goals Rejected
+              </h4>
+              <p style={{ marginTop: 8, color: '#991b1b', fontSize: 14 }}>
+                <strong>Reporting Officer Remarks:</strong> {rejectionRemarks}
+              </p>
+            </div>
+          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 20, alignItems: 'start' }}>
             {/* Form */}
@@ -121,17 +160,22 @@ export default function GoalSetting() {
             <Card
               title={`My KPAs (${kpas.length})`}
               actions={
-                !isSubmitted && kpas.length > 0 && (
-                  <Button
-                    variant="success"
-                    size="sm"
-                    loading={submitting}
-                    onClick={handleSubmitAll}
-                    disabled={Math.abs(totalWeight - 100) > 0.01}
-                  >
-                    Submit All KPAs
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <Button variant="secondary" size="sm" onClick={() => window.print()}>
+                    Print
                   </Button>
-                )
+                  {!isSubmitted && kpas.length > 0 && (
+                    <Button
+                      variant="success"
+                      size="sm"
+                      loading={submitting}
+                      onClick={handleSubmitAll}
+                      disabled={Math.abs(totalWeight - 100) > 0.01}
+                    >
+                      Submit All KPAs
+                    </Button>
+                  )}
+                </div>
               }
             >
               {kpas.length === 0 ? (

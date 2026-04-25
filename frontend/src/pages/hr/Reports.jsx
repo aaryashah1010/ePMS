@@ -47,6 +47,39 @@ export default function Reports() {
     }
   };
 
+  const handleExportDepartment = async () => {
+    if (!cycleId) return;
+    try {
+      const r = await reportAPI.exportDepartment(cycleId);
+      const url = window.URL.createObjectURL(new Blob([r.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'department_summary.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setMsg({ type: 'error', text: 'Failed to download department report' });
+    }
+  };
+
+  const handleExportIndividual = async () => {
+    if (!cycleId || !selectedUserId) return;
+    try {
+      const r = await reportAPI.exportIndividual(cycleId, selectedUserId);
+      const url = window.URL.createObjectURL(new Blob([r.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      // We could use the user's name from individualReport, but a generic or ID is fine too
+      link.setAttribute('download', `appraisal_report_${selectedUserId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setMsg({ type: 'error', text: 'Failed to download individual report' });
+    }
+  };
+
   const BAND_COLORS = {
     Poor: '#dc2626', 'Below Average': '#d97706', Average: '#0369a1', Good: '#16a34a', Outstanding: '#7c3aed',
   };
@@ -75,6 +108,13 @@ export default function Reports() {
           {/* Department Summary */}
           {activeTab === 'department' && (
             <div>
+              {deptSummary.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                  <button onClick={handleExportDepartment} style={exportBtnStyle}>
+                    ⬇️ Download Excel Summary
+                  </button>
+                </div>
+              )}
               {deptSummary.map((dept) => (
                 <Card key={dept.department} title={dept.department || 'Unknown'} style={{ marginBottom: 16 }}>
                   <div style={{ display: 'flex', gap: 20, marginBottom: 12, flexWrap: 'wrap' }}>
@@ -186,6 +226,11 @@ export default function Reports() {
 
               {individualReport && (
                 <>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                    <button onClick={handleExportIndividual} style={exportBtnStyle}>
+                      ⬇️ Download PDF Report
+                    </button>
+                  </div>
                   <Card title="Employee Details" style={{ marginBottom: 16 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
                       {[
@@ -256,3 +301,4 @@ const tdStyle = { padding: '10px 12px', fontSize: 13 };
 const statChip = { background: '#dbeafe', color: '#1d4ed8', padding: '4px 12px', borderRadius: 16, fontSize: 13, fontWeight: 600 };
 const inputStyle = { padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
 const fetchBtnStyle = { padding: '8px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' };
+const exportBtnStyle = { padding: '8px 16px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 };
