@@ -123,6 +123,17 @@ export default function RatingPage() {
         if (r.ratedBy === user.id) myAttrMap[attributeId] = { rating: r.rating, remarks: r.remarks || '' };
       }
     }
+    // If not rated yet, default to most recent previous officer's attribute rating
+    for (const attr of attributes) {
+      if (!myAttrMap[attr.id]) {
+        for (const rid of fallbackOrder) {
+          if (attrByRater[rid]?.[attr.id]) {
+            myAttrMap[attr.id] = { rating: attrByRater[rid][attr.id].rating, remarks: '' };
+            break;
+          }
+        }
+      }
+    }
     setAttrRatings(myAttrMap);
   };
 
@@ -219,7 +230,7 @@ export default function RatingPage() {
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{a.user?.name}</div>
                   <div style={{ fontSize: 12, color: '#64748b' }}>{a.user?.department} · {a.user?.employeeCode}</div>
-                  {a.finalScore && <div style={{ fontSize: 13, marginTop: 4 }}>Score: <strong>{a.finalScore}</strong> · <Badge label={a.ratingBand} /></div>}
+                  {a.finalScore && <div style={{ fontSize: 13, marginTop: 4 }}>Score: <strong>{a.finalScore} / 5</strong> · <Badge label={a.ratingBand} /></div>}
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Badge label={a.status} />

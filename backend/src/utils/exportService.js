@@ -17,7 +17,7 @@ function generateIndividualPDF(reportData, res) {
   doc.fontSize(14).text(`Name: ${reportData.user.name}`);
   doc.text(`Employee Code: ${reportData.user.employeeCode || 'N/A'}`);
   doc.text(`Department: ${reportData.user.department || 'N/A'}`);
-  doc.text(`Final Score: ${appraisal.finalScore || 'N/A'}`);
+  doc.text(`Final Score: ${appraisal.finalScore != null ? appraisal.finalScore + ' / 5' : 'N/A'}`);
   doc.text(`Rating Band: ${appraisal.ratingBand || 'N/A'}`);
   doc.moveDown();
 

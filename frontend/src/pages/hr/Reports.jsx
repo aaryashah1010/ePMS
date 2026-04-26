@@ -121,7 +121,7 @@ export default function Reports() {
                     <span style={statChip}>{dept.totalEmployees} Employees</span>
                     <span style={statChip}>{dept.finalized} Finalized</span>
                     <span style={{ ...statChip, background: '#dcfce7', color: '#166534' }}>
-                      Avg Score: {dept.avgFinalScore ?? 'N/A'}
+                      Avg Score: {dept.avgFinalScore != null ? `${dept.avgFinalScore} / 5` : 'N/A'}
                     </span>
                   </div>
                   <div style={{ overflowX: 'auto' }}>
@@ -139,7 +139,7 @@ export default function Reports() {
                             <td style={tdStyle}>{e.name}</td>
                             <td style={tdStyle}>{e.employeeCode || '—'}</td>
                             <td style={tdStyle}><Badge label={e.status} /></td>
-                            <td style={tdStyle}><strong>{e.finalScore ?? '—'}</strong></td>
+                            <td style={tdStyle}><strong>{e.finalScore != null ? `${e.finalScore} / 5` : '—'}</strong></td>
                             <td style={tdStyle}>
                               {e.ratingBand ? <Badge label={e.ratingBand} /> : '—'}
                             </td>
@@ -253,21 +253,25 @@ export default function Reports() {
                         <Badge label={individualReport.appraisal.status} />
                         {individualReport.appraisal.ratingBand && <Badge label={individualReport.appraisal.ratingBand} />}
                       </div>
-                      {individualReport.appraisal.finalScore && (
+                      {individualReport.appraisal.finalScore && (() => {
+                        const kpaRaw = individualReport.appraisal.kpaScore;
+                        const kpaOn5 = kpaRaw != null ? parseFloat((kpaRaw / 20).toFixed(2)) : null;
+                        return (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
                           {[
-                            ['Final Score', individualReport.appraisal.finalScore],
-                            ['KPA (60%)', individualReport.appraisal.kpaScore],
-                            ['Values (20%)', individualReport.appraisal.valuesScore],
-                            ['Competencies (20%)', individualReport.appraisal.competenciesScore],
-                          ].map(([l, v]) => (
+                            ['Final Score', individualReport.appraisal.finalScore, '/ 5'],
+                            ['KPA (60%)', kpaOn5, `/ 5 (raw: ${kpaRaw ?? '—'}/100)`],
+                            ['Values (20%)', individualReport.appraisal.valuesScore, '/ 5'],
+                            ['Competencies (20%)', individualReport.appraisal.competenciesScore, '/ 5'],
+                          ].map(([l, v, suffix]) => (
                             <div key={l} style={{ background: '#f8fafc', padding: 14, borderRadius: 8, textAlign: 'center' }}>
                               <div style={{ fontSize: 12, color: '#64748b' }}>{l}</div>
-                              <div style={{ fontSize: 24, fontWeight: 800, color: '#2563eb' }}>{v ?? '—'}</div>
+                              <div style={{ fontSize: 24, fontWeight: 800, color: '#2563eb' }}>{v ?? '—'}<span style={{ fontSize: 12, fontWeight: 500, color: '#94a3b8' }}> {v != null ? suffix : ''}</span></div>
                             </div>
                           ))}
                         </div>
-                      )}
+                        );
+                      })()}
                       {individualReport.kpas?.length > 0 && (
                         <div>
                           <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>KPA Goals</h4>

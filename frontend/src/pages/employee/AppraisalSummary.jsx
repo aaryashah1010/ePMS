@@ -137,7 +137,7 @@ export default function AppraisalSummary() {
                   </p>
                   {appraisal.status === 'FINALIZED' && appraisal.finalScore && (
                     <div style={{ marginTop: 12 }}>
-                      <div style={{ fontSize: 32, fontWeight: 800, color: '#2563eb' }}>{appraisal.finalScore}</div>
+                      <div style={{ fontSize: 32, fontWeight: 800, color: '#2563eb' }}>{appraisal.finalScore}<span style={{ fontSize: 14, fontWeight: 500, color: '#94a3b8' }}> / 5</span></div>
                       <Badge label={appraisal.ratingBand} />
                     </div>
                   )}

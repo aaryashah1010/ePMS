@@ -3,8 +3,12 @@ const { logAudit } = require('../utils/auditLogger');
 
 async function getMyAppraisal(req, res, next) {
   try {
-    await appraisalService.getOrCreateAppraisal(req.user.id, req.params.cycleId);
-    const appraisal = await appraisalService.getAppraisalFull(req.user.id, req.params.cycleId);
+    let appraisal = null;
+    try {
+      appraisal = await appraisalService.getAppraisalFull(req.user.id, req.params.cycleId);
+    } catch {
+      // No appraisal exists yet — return null instead of auto-creating
+    }
     res.json({ success: true, appraisal });
   } catch (err) { next(err); }
 }
