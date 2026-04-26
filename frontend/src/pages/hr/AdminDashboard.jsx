@@ -3,31 +3,23 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Card, { StatCard } from '../../components/Card';
 import Badge from '../../components/Badge';
-import { cycleAPI, userAPI, reportAPI } from '../../services/api';
+import { cycleAPI, userAPI } from '../../services/api';
 
 export default function AdminDashboard() {
   const [cycles, setCycles] = useState([]);
   const [users, setUsers] = useState([]);
   const [activeCycles, setActiveCycles] = useState([]);
-  const [progressData, setProgressData] = useState(null);
 
   useEffect(() => {
     Promise.allSettled([
       cycleAPI.getAll(),
       userAPI.getAll(),
       cycleAPI.getActive(),
-    ]).then(async ([c, u, ac]) => {
+    ]).then(([c, u, ac]) => {
       if (c.status === 'fulfilled') setCycles(c.value.data.cycles || []);
       if (u.status === 'fulfilled') setUsers(u.value.data.users || []);
       if (ac.status === 'fulfilled') {
-        const activeList = ac.value.data.cycles || [];
-        setActiveCycles(activeList);
-        if (activeList.length > 0) {
-          const prog = await reportAPI.progress(activeList[0].id).catch(() => null);
-          if (prog?.data?.progress) {
-            setProgressData(prog.data.progress);
-          }
-        }
+        setActiveCycles(ac.value.data.cycles || []);
       }
     });
   }, []);
@@ -71,44 +63,8 @@ export default function AdminDashboard() {
           ))}
         </Card>
       </div>
-
-      {progressData && activeCycles[0] && (
-        <Card title={`Completion Stats: ${activeCycles[0].name}`}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
-            <div>
-              <h4 style={{ fontSize: 14, marginBottom: 8, color: '#1e293b' }}>Goal Setting</h4>
-              <StatRow label="Draft" value={progressData.goalProgress.DRAFT || 0} />
-              <StatRow label="Submitted" value={progressData.goalProgress.SUBMITTED || 0} />
-              <StatRow label="Reporting Done" value={progressData.goalProgress.REPORTING_DONE || 0} />
-            </div>
-            <div>
-              <h4 style={{ fontSize: 14, marginBottom: 8, color: '#1e293b' }}>Mid-Year Review</h4>
-              <StatRow label="Draft" value={progressData.midYearProgress.DRAFT || 0} />
-              <StatRow label="Submitted" value={progressData.midYearProgress.SUBMITTED || 0} />
-              <StatRow label="Reporting Done" value={progressData.midYearProgress.REPORTING_DONE || 0} />
-            </div>
-            <div>
-              <h4 style={{ fontSize: 14, marginBottom: 8, color: '#1e293b' }}>Annual Appraisal</h4>
-              <StatRow label="Draft" value={progressData.appraisalProgress.DRAFT || 0} />
-              <StatRow label="Submitted" value={progressData.appraisalProgress.SUBMITTED || 0} />
-              <StatRow label="Reporting Done" value={progressData.appraisalProgress.REPORTING_DONE || 0} />
-              <StatRow label="Reviewing Done" value={progressData.appraisalProgress.REVIEWING_DONE || 0} />
-              <StatRow label="Accepting Done" value={progressData.appraisalProgress.ACCEPTING_DONE || 0} />
-              <StatRow label="Finalized" value={progressData.appraisalProgress.FINALIZED || 0} />
-            </div>
-          </div>
-        </Card>
-      )}
     </Layout>
   );
 }
 
-const StatRow = ({ label, value }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: '1px solid #f1f5f9' }}>
-    <span style={{ color: '#64748b' }}>{label}</span>
-    <strong style={{ color: '#0f172a' }}>{value}</strong>
-  </div>
-);
-
 const linkStyle = { fontSize: 13, color: '#2563eb', textDecoration: 'none', fontWeight: 600 };
-const arrowBtnStyle = { background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', fontWeight: 'bold' };
