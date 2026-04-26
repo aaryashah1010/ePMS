@@ -3,9 +3,27 @@ const prisma = require('../utils/prisma');
 const { NotFoundError, ConflictError } = require('../utils/errors');
 const { sendEmail } = require('../utils/emailService');
 
-async function createUser(data) {
+async function createUser(data, callerRole) {
   const exists = await prisma.user.findUnique({ where: { email: data.email } });
   if (exists) throw new ConflictError('Email already registered');
+
+  // Role restrictions
+  if (callerRole === 'HR' && data.role !== 'EMPLOYEE') {
+    throw new ConflictError('HR can only create Employee accounts.');
+  }
+  if (callerRole === 'MANAGING_DIRECTOR' && data.role !== 'HR') {
+    throw new ConflictError('Managing Director can only create HR accounts. Use HR portal for other roles.');
+  }
+
+  // Auto-assign MD as all three officers for HR users
+  if (data.role === 'HR') {
+    const md = await prisma.user.findFirst({ where: { role: 'MANAGING_DIRECTOR', isActive: true } });
+    if (md) {
+      data.reportingOfficerId = md.id;
+      data.reviewingOfficerId = md.id;
+      data.acceptingOfficerId = md.id;
+    }
+  }
 
   const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 10;
   const password = await bcrypt.hash(data.password, rounds);

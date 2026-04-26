@@ -14,6 +14,7 @@ const appraisalRoutes = require('./src/routes/appraisal');
 const reportRoutes = require('./src/routes/reports');
 const auditRoutes = require('./src/routes/audit');
 const attributeRoutes = require('./src/routes/attributes');
+const ceoRoutes = require('./src/routes/ceo');
 
 const { errorHandler, notFound } = require('./src/middleware/errorHandler');
 const { initCycleScheduler } = require('./src/cron/cycleScheduler');
@@ -48,6 +49,7 @@ app.use('/api/appraisal', appraisalRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/attributes', attributeRoutes);
+app.use('/api/ceo', ceoRoutes);
 
 // Error handling
 app.use(notFound);

@@ -6,7 +6,7 @@ import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import { userAPI } from '../../services/api';
 
-const ROLES = ['EMPLOYEE', 'HR'];
+const ROLES = ['EMPLOYEE'];
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'EMPLOYEE', department: '', employeeCode: '', reportingOfficerId: '', reviewingOfficerId: '', acceptingOfficerId: '' };
 
 export default function UserManagement() {

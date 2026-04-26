@@ -4,7 +4,7 @@ const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');
 
 router.use(authenticate);
-router.use(authorize('HR', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'));
+router.use(authorize('HR', 'MANAGING_DIRECTOR', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'));
 
 router.get('/cycle/:cycleId/individual/:userId', ctrl.individualReport);
 router.get('/cycle/:cycleId/individual/:userId/export', ctrl.exportIndividualPDF);

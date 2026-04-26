@@ -28,10 +28,14 @@ import UserManagement from './pages/hr/UserManagement';
 import Reports from './pages/hr/Reports';
 import AttributeManagement from './pages/hr/AttributeManagement';
 
+// CEO
+import CEODashboard from './pages/ceo/CEODashboard';
+import CEOUserManagement from './pages/ceo/CEOUserManagement';
+
 // Roles mapping
 const EMP = ['EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'];
-// Officers should just be covered by EMP now because of UI restrictions
 const HR = ['HR'];
+const MD = ['MANAGING_DIRECTOR'];
 
 export default function App() {
   return (
@@ -72,6 +76,10 @@ export default function App() {
           <Route path="/hr/users" element={<ProtectedRoute roles={HR}><UserManagement /></ProtectedRoute>} />
           <Route path="/hr/reports" element={<ProtectedRoute roles={HR}><Reports /></ProtectedRoute>} />
           <Route path="/hr/attributes" element={<ProtectedRoute roles={HR}><AttributeManagement /></ProtectedRoute>} />
+
+          {/* CEO / Managing Director */}
+          <Route path="/ceo/dashboard" element={<ProtectedRoute roles={MD}><CEODashboard /></ProtectedRoute>} />
+          <Route path="/ceo/users" element={<ProtectedRoute roles={MD}><CEOUserManagement /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
