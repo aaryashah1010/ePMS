@@ -9,6 +9,7 @@ const ROLE_REDIRECTS = {
   REVIEWING_OFFICER: '/employee/dashboard',
   ACCEPTING_OFFICER: '/employee/dashboard',
   HR: '/hr/dashboard',
+  MANAGING_DIRECTOR: '/ceo/dashboard',
 };
 
 export default function Login() {
@@ -74,6 +75,7 @@ export default function Login() {
         <div style={hintsStyle}>
           <p style={{ fontSize: 13, color: '#64748b', marginBottom: 8, fontWeight: 600 }}>Demo Accounts:</p>
           {[
+            ['CEO (MD)', 'ceo@epms.com', 'ceo@123'],
             ['HR Admin', 'hr@epms.com', 'hr@123'],
             ['Alice (Employee)', 'alice@epms.com', 'alice@123'],
             ['Bob (Reporting Officer)', 'bob@epms.com', 'bob@123'],

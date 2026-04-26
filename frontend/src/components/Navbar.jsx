@@ -10,6 +10,10 @@ const NAV_LINKS = {
     { to: '/hr/reports', label: 'Reports' },
     { to: '/hr/attributes', label: 'Attributes' },
   ],
+  MANAGING_DIRECTOR: [
+    { to: '/ceo/dashboard', label: 'Dashboard' },
+    { to: '/ceo/users', label: 'Manage HRs' },
+  ],
   EMPLOYEE_SPACE: [
     { to: '/employee/dashboard', label: 'Home' },
     { to: '/employee/summary', label: 'My Appraisal Space' },
@@ -36,7 +40,10 @@ export default function Navbar() {
   let links = [];
   let positionLabel = '';
 
-  if (user?.role === 'HR') {
+  if (user?.role === 'MANAGING_DIRECTOR') {
+    links = NAV_LINKS.MANAGING_DIRECTOR;
+    positionLabel = 'Managing Director';
+  } else if (user?.role === 'HR') {
     links = NAV_LINKS.HR;
     positionLabel = 'HR Admin';
   } else {

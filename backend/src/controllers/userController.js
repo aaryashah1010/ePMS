@@ -3,7 +3,7 @@ const { logAudit } = require('../utils/auditLogger');
 
 async function createUser(req, res, next) {
   try {
-    const user = await userService.createUser(req.body);
+    const user = await userService.createUser(req.body, req.user.role);
     await logAudit({ userId: req.user.id, action: 'CREATE_USER', entity: 'User', entityId: user.id, newValue: { email: user.email, role: user.role } });
     res.status(201).json({ success: true, user });
   } catch (err) { next(err); }

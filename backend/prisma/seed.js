@@ -8,10 +8,28 @@ async function main() {
 
   const rounds = 10;
 
-  // Create HR Admin
+  // Create Managing Director (CEO) first
+  const ceo = await prisma.user.upsert({
+    where: { email: 'ceo@epms.com' },
+    update: {},
+    create: {
+      name: 'Managing Director',
+      email: 'ceo@epms.com',
+      password: await bcrypt.hash('ceo@123', rounds),
+      role: 'MANAGING_DIRECTOR',
+      department: 'Management',
+      employeeCode: 'MD001',
+    },
+  });
+
+  // Create HR Admin — reporting to MD
   const hr = await prisma.user.upsert({
     where: { email: 'hr@epms.com' },
-    update: {},
+    update: {
+      reportingOfficerId: ceo.id,
+      reviewingOfficerId: ceo.id,
+      acceptingOfficerId: ceo.id,
+    },
     create: {
       name: 'HR Admin',
       email: 'hr@epms.com',
@@ -19,6 +37,9 @@ async function main() {
       role: 'HR',
       department: 'Human Resources',
       employeeCode: 'HR001',
+      reportingOfficerId: ceo.id,
+      reviewingOfficerId: ceo.id,
+      acceptingOfficerId: ceo.id,
     },
   });
 
@@ -121,6 +142,7 @@ async function main() {
 
   console.log('Seed completed successfully!');
   console.log('\n--- Login Credentials ---');
+  console.log('CEO (MD):          ceo@epms.com        / ceo@123');
   console.log('HR Admin:          hr@epms.com         / hr@123');
   console.log('Employee:          alice@epms.com      / alice@123');
   console.log('Employee 2:        bob@epms.com        / bob@123');

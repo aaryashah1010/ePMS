@@ -119,3 +119,8 @@ export const auditAPI = {
   getMy: () => api.get('/audit/my'),
   getAll: (params) => api.get('/audit', { params }),
 };
+
+// --- CEO Dashboard ---
+export const ceoAPI = {
+  getDashboard: (cycleId) => cycleId ? api.get(`/ceo/dashboard/${cycleId}`) : api.get('/ceo/dashboard'),
+};
