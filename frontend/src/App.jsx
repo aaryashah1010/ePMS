@@ -60,10 +60,10 @@ export default function App() {
           <Route path="/employee/appraisal" element={<ProtectedRoute roles={EMP}><SelfAppraisal /></ProtectedRoute>} />
 
           {/* Officers (Now Accessible by EMP with internal UI restrictions) */}
-          <Route path="/officer/dashboard" element={<ProtectedRoute roles={EMP}><OfficerDashboard /></ProtectedRoute>} />
-          <Route path="/officer/goals" element={<ProtectedRoute roles={EMP}><GoalApproval /></ProtectedRoute>} />
-          <Route path="/officer/mid-year" element={<ProtectedRoute roles={EMP}><OfficerMidYear /></ProtectedRoute>} />
-          <Route path="/officer/ratings" element={<ProtectedRoute roles={EMP}><RatingPage /></ProtectedRoute>} />
+          <Route path="/officer/:roleType/dashboard" element={<ProtectedRoute roles={EMP}><OfficerDashboard /></ProtectedRoute>} />
+          <Route path="/officer/:roleType/goals" element={<ProtectedRoute roles={EMP}><GoalApproval /></ProtectedRoute>} />
+          <Route path="/officer/:roleType/mid-year" element={<ProtectedRoute roles={EMP}><OfficerMidYear /></ProtectedRoute>} />
+          <Route path="/officer/:roleType/ratings" element={<ProtectedRoute roles={EMP}><RatingPage /></ProtectedRoute>} />
 
           {/* HR */}
           <Route path="/hr/dashboard" element={<ProtectedRoute roles={HR}><AdminDashboard /></ProtectedRoute>} />

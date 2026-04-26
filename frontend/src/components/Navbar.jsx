@@ -44,12 +44,25 @@ export default function Navbar() {
     if (location.pathname === '/employee/dashboard') {
       links = [{ to: '/employee/dashboard', label: 'Home' }];
       positionLabel = '';
-    } else if (location.pathname.startsWith('/officer')) {
-      links = NAV_LINKS.OFFICER_SPACE;
-      positionLabel = 'Reporting Officer'; // Default generic term as requested
+    } else if (location.pathname.startsWith('/officer/')) {
+      const parts = location.pathname.split('/');
+      const roleType = parts[2]; // reporting, reviewing, accepting
+      
+      let contextualTarget = 'Reportees';
+      let title = 'Reporting Officer';
+      if (roleType === 'reviewing') { contextualTarget = 'Reviewees'; title = 'Reviewing Officer'; }
+      if (roleType === 'accepting') { contextualTarget = 'Appraisees'; title = 'Accepting Officer'; }
+
+      links = [
+        { to: '/employee/dashboard', label: 'Home' },
+        { to: `/officer/${roleType}/dashboard`, label: `${contextualTarget} Dashboard` },
+        { to: `/officer/${roleType}/goals`, label: 'Goal Review' },
+        { to: `/officer/${roleType}/mid-year`, label: `${contextualTarget} Mid-Year` },
+        { to: `/officer/${roleType}/ratings`, label: `Rate ${contextualTarget}` },
+      ];
+      positionLabel = title;
     } else {
       links = NAV_LINKS.EMPLOYEE_SPACE;
-      // When in employee routes, show nothing as position
       positionLabel = '';
     }
   }

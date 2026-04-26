@@ -75,11 +75,14 @@ export default function Login() {
           <p style={{ fontSize: 13, color: '#64748b', marginBottom: 8, fontWeight: 600 }}>Demo Accounts:</p>
           {[
             ['HR Admin', 'hr@epms.com', 'hr@123'],
-            ['Employee', 'alice@epms.com', 'alice@123'],
-            ['Manager (Officer)', 'manager@epms.com', 'manager@123'],
+            ['Alice (Employee)', 'alice@epms.com', 'alice@123'],
+            ['Bob (Reporting Officer)', 'bob@epms.com', 'bob@123'],
+            ['Carol (Reviewing Officer)', 'carol@epms.com', 'carol@123'],
+            ['Dave (Accepting Officer)', 'dave@epms.com', 'dave@123'],
           ].map(([role, email, pass]) => (
             <button
               key={email}
+              type="button"
               style={quickBtnStyle}
               onClick={() => setForm({ email, password: pass })}
             >

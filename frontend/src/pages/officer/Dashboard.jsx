@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Card, { StatCard } from '../../components/Card';
 import Badge from '../../components/Badge';
@@ -8,28 +8,43 @@ import { cycleAPI, appraisalAPI, userAPI } from '../../services/api';
 
 export default function OfficerDashboard() {
   const { user } = useAuth();
+  const { roleType } = useParams(); // reporting, reviewing, accepting
   const [activeCycles, setActiveCycles] = useState([]);
   const [cycleIndex, setCycleIndex] = useState(0);
   const [appraisalsMap, setAppraisalsMap] = useState({});
-  const [reportees, setReportees] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     cycleAPI.getActive().then(async (r) => {
       const list = r.data.cycles || [];
       setActiveCycles(list);
 
-      const rp = await userAPI.getReportees().catch(() => ({ data: {} }));
-      setReportees(rp.data?.reportees || []);
+      let empRes;
+      if (roleType === 'reporting') empRes = await userAPI.getReportees().catch(() => ({ data: {} }));
+      else if (roleType === 'reviewing') empRes = await userAPI.getReviewees().catch(() => ({ data: {} }));
+      else if (roleType === 'accepting') empRes = await userAPI.getAppraisees().catch(() => ({ data: {} }));
+      
+      const emps = empRes?.data?.reportees || empRes?.data?.reviewees || empRes?.data?.appraisees || [];
+      setEmployees(emps);
 
       const newMap = {};
       await Promise.all(list.map(async (c) => {
         const ap = await appraisalAPI.getTeam(c.id).catch(() => ({ data: {} }));
-        newMap[c.id] = ap.data?.appraisals || [];
+        // appraisalAPI.getTeam returns all appraisals for the officer.
+        // We should ideally filter these by the roleType if the backend returns all of them.
+        // Wait, backend getTeam might need to be filtered by who they are for. We can filter on frontend:
+        const allAppraisals = ap.data?.appraisals || [];
+        const filtered = allAppraisals.filter(a => {
+          if (roleType === 'reporting') return a.user.reportingOfficerId === user.id;
+          if (roleType === 'reviewing') return a.user.reviewingOfficerId === user.id;
+          if (roleType === 'accepting') return a.user.acceptingOfficerId === user.id;
+          return false;
+        });
+        newMap[c.id] = filtered;
       }));
       setAppraisalsMap(newMap);
     }).catch(() => {});
-  }, []);
-
+  }, [roleType, user.id]);
 
   const cycle = activeCycles[cycleIndex] || null;
   const appraisals = cycle ? (appraisalsMap[cycle.id] || []) : [];
@@ -37,16 +52,15 @@ export default function OfficerDashboard() {
   const handlePrev = () => setCycleIndex((prev) => (prev - 1 + activeCycles.length) % activeCycles.length);
   const handleNext = () => setCycleIndex((prev) => (prev + 1) % activeCycles.length);
 
-  const ROLE_LABELS = {
-    REPORTING_OFFICER: 'Reporting Officer',
-    REVIEWING_OFFICER: 'Reviewing Officer',
-    ACCEPTING_OFFICER: 'Accepting Officer',
-  };
+  let contextualTarget = 'Reportees';
+  let title = 'Reporting Officer';
+  if (roleType === 'reviewing') { contextualTarget = 'Reviewees'; title = 'Reviewing Officer'; }
+  if (roleType === 'accepting') { contextualTarget = 'Appraisees'; title = 'Accepting Officer'; }
 
   const pendingAction = appraisals.filter((a) => {
-    if (user.role === 'REPORTING_OFFICER') return a.status === 'SUBMITTED';
-    if (user.role === 'REVIEWING_OFFICER') return a.status === 'REPORTING_DONE';
-    if (user.role === 'ACCEPTING_OFFICER') return a.status === 'REVIEWING_DONE';
+    if (roleType === 'reporting') return a.status === 'SUBMITTED';
+    if (roleType === 'reviewing') return a.status === 'REPORTING_DONE';
+    if (roleType === 'accepting') return a.status === 'REVIEWING_DONE';
     return false;
   }).length;
 
@@ -54,10 +68,10 @@ export default function OfficerDashboard() {
     <Layout>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1e293b' }}>
-          Officer Dashboard
+          {title} Dashboard
         </h1>
         <p style={{ color: '#64748b', marginTop: 4 }}>
-          {ROLE_LABELS[user?.role]} · {user?.department}
+          {user?.name} · {user?.department}
         </p>
       </div>
 
@@ -84,14 +98,14 @@ export default function OfficerDashboard() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <StatCard label="Team Members" value={reportees.length} color="#2563eb" />
+        <StatCard label={`Total ${contextualTarget}`} value={employees.length} color="#2563eb" />
         <StatCard label="Total Appraisals" value={appraisals.length} color="#7c3aed" />
         <StatCard label="Pending Your Action" value={pendingAction} color={pendingAction > 0 ? '#d97706' : '#16a34a'} />
         <StatCard label="Finalized" value={appraisals.filter((a) => a.status === 'FINALIZED').length} color="#16a34a" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <Card title="Team Appraisal Status" actions={<Link to="/officer/ratings" style={linkStyle}>View All →</Link>}>
+        <Card title={`${contextualTarget} Appraisal Status`} actions={<Link to={`/officer/${roleType}/ratings`} style={linkStyle}>View All →</Link>}>
           {appraisals.length === 0 ? (
             <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No appraisals found.</p>
           ) : (
@@ -107,11 +121,11 @@ export default function OfficerDashboard() {
           )}
         </Card>
 
-        <Card title="My Team" actions={<Link to="/officer/goals" style={linkStyle}>View Goals →</Link>}>
-          {reportees.length === 0 ? (
-            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No reportees assigned.</p>
+        <Card title={`My ${contextualTarget}`} actions={<Link to={`/officer/${roleType}/goals`} style={linkStyle}>View Goals →</Link>}>
+          {employees.length === 0 ? (
+            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No {contextualTarget.toLowerCase()} assigned.</p>
           ) : (
-            reportees.map((r) => (
+            employees.map((r) => (
               <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
                 <div style={avatarStyle}>{r.name?.charAt(0)}</div>
                 <div>

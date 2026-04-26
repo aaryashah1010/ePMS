@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
@@ -9,13 +10,14 @@ import { appraisalAPI, kpaAPI, attributeAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const ACTION_MAP = {
-  REPORTING_OFFICER: { requiredStatus: 'SUBMITTED', actionLabel: 'Mark Reporting Done', handler: 'reportingDone' },
-  REVIEWING_OFFICER: { requiredStatus: 'REPORTING_DONE', actionLabel: 'Mark Reviewing Done', handler: 'reviewingDone' },
-  ACCEPTING_OFFICER: { requiredStatus: 'REVIEWING_DONE', actionLabel: 'Accept & Finalize', handler: 'acceptingDone' },
+  reporting: { requiredStatus: 'SUBMITTED', actionLabel: 'Mark Reporting Done', handler: 'reportingDone' },
+  reviewing: { requiredStatus: 'REPORTING_DONE', actionLabel: 'Mark Reviewing Done', handler: 'reviewingDone' },
+  accepting: { requiredStatus: 'REVIEWING_DONE', actionLabel: 'Accept & Finalize', handler: 'acceptingDone' },
 };
 
 export default function RatingPage() {
   const { user } = useAuth();
+  const { roleType } = useParams();
   const [cycleId, setCycleId] = useState('');
   const [appraisals, setAppraisals] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -30,34 +32,28 @@ export default function RatingPage() {
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
 
-  const getActionForAppraisal = (a) => {
-    if (!a) return null;
-    if (a.status === 'SUBMITTED' && a.user?.reportingOfficerId === user.id) return ACTION_MAP.REPORTING_OFFICER;
-    if (a.status === 'REPORTING_DONE' && a.user?.reviewingOfficerId === user.id) return ACTION_MAP.REVIEWING_OFFICER;
-    if (a.status === 'REVIEWING_DONE' && a.user?.acceptingOfficerId === user.id) return ACTION_MAP.ACCEPTING_OFFICER;
-    
-    // Fallbacks for checking permissions
-    if (a.user?.reportingOfficerId === user.id) return ACTION_MAP.REPORTING_OFFICER;
-    if (a.user?.reviewingOfficerId === user.id) return ACTION_MAP.REVIEWING_OFFICER;
-    if (a.user?.acceptingOfficerId === user.id) return ACTION_MAP.ACCEPTING_OFFICER;
-    return null;
-  };
-
-  const action = getActionForAppraisal(selected);
+  const action = ACTION_MAP[roleType];
   
   let prevRatingLabel = "Previous Officer's Rating";
-  if (action === ACTION_MAP.REVIEWING_OFFICER) prevRatingLabel = "Reporting Officer's Rating";
-  else if (action === ACTION_MAP.ACCEPTING_OFFICER) prevRatingLabel = "Reviewing Officer's Rating";
+  if (roleType === 'reviewing') prevRatingLabel = "Reporting Officer's Rating";
+  else if (roleType === 'accepting') prevRatingLabel = "Reviewing Officer's Rating";
 
   const loadAppraisals = async (cid) => {
     if (!cid) return;
     try {
       const r = await appraisalAPI.getTeam(cid);
-      setAppraisals(r.data.appraisals || []);
+      const allAppraisals = r.data.appraisals || [];
+      const filtered = allAppraisals.filter(a => {
+        if (roleType === 'reporting') return a.user.reportingOfficerId === user.id;
+        if (roleType === 'reviewing') return a.user.reviewingOfficerId === user.id && ['REPORTING_DONE', 'REVIEWING_DONE', 'ACCEPTING_DONE', 'FINALIZED'].includes(a.status);
+        if (roleType === 'accepting') return a.user.acceptingOfficerId === user.id && ['REVIEWING_DONE', 'ACCEPTING_DONE', 'FINALIZED'].includes(a.status);
+        return false;
+      });
+      setAppraisals(filtered);
     } catch { setAppraisals([]); }
   };
 
-  useEffect(() => { loadAppraisals(cycleId); }, [cycleId]);
+  useEffect(() => { loadAppraisals(cycleId); }, [cycleId, roleType, user.id]);
 
   const loadAttributes = async () => {
     const r = await attributeAPI.getAll({ isActive: 'true' });
@@ -134,8 +130,8 @@ export default function RatingPage() {
     } finally { setSaving(false); }
   };
 
-  const handleAction = async () => {
-    if (!window.confirm(`${action.actionLabel}?`)) return;
+  const handleActionClick = async () => {
+    if (!window.confirm(`${action?.actionLabel}?`)) return;
     setActing(true);
     try {
       // Auto-save ratings silently before submitting the action
@@ -160,10 +156,14 @@ export default function RatingPage() {
   const competencyAttrs = attributes.filter((a) => a.type === 'COMPETENCIES');
   
   const isEditable = action && selected?.status === action.requiredStatus;
+  
+  let contextualTarget = 'Reportees';
+  if (roleType === 'reviewing') contextualTarget = 'Reviewees';
+  if (roleType === 'accepting') contextualTarget = 'Appraisees';
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Rate Appraisals</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Rate {contextualTarget}</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} minPhase="ANNUAL_APPRAISAL" />
@@ -174,12 +174,11 @@ export default function RatingPage() {
       )}
 
       {cycleId && !selected && (
-        <Card title={`Team Appraisals (${appraisals.length})`}>
+        <Card title={`${contextualTarget} Appraisals (${appraisals.length})`}>
           {appraisals.length === 0 ? (
-            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No appraisals available.</p>
+            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No appraisals available for {contextualTarget.toLowerCase()}.</p>
           ) : (
             appraisals.map((a) => {
-              const rowAction = getActionForAppraisal(a);
               return (
               <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
                 <div>
@@ -189,7 +188,7 @@ export default function RatingPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Badge label={a.status} />
-                  {rowAction && a.status === rowAction.requiredStatus ? (
+                  {action && a.status === action.requiredStatus ? (
                     <Button size="sm" onClick={() => loadFull(a)}>Rate & Review</Button>
                   ) : (
                     <Button size="sm" variant="outline" onClick={() => loadFull(a)}>View</Button>
@@ -339,7 +338,7 @@ export default function RatingPage() {
                 <>
                   <Button onClick={handleSaveRatings} loading={saving} variant="outline">Save Draft Ratings</Button>
                   <Button onClick={handleActionClick} loading={acting} variant="success">
-                    {action.actionLabel}
+                    {action?.actionLabel}
                   </Button>
                 </>
               )}
@@ -347,10 +346,6 @@ export default function RatingPage() {
           </Card>
         </div>
       )}
-      <ConfirmModal 
-        {...modalConfig} 
-        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
-      />
     </Layout>
   );
 }

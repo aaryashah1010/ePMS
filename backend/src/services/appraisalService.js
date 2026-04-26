@@ -178,7 +178,7 @@ async function getAppraisalsForOfficer(officerId, cycleId, officerRole) {
   return prisma.annualAppraisal.findMany({
     where: whereCondition,
     include: {
-      user: { select: { id: true, name: true, email: true, department: true, employeeCode: true } },
+      user: { select: { id: true, name: true, email: true, department: true, employeeCode: true, reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true } },
     },
     orderBy: { updatedAt: 'desc' },
   });

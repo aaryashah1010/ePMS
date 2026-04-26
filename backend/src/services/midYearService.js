@@ -73,7 +73,7 @@ async function getMidYearForOfficer(officerId, cycleId) {
       },
     },
     include: {
-      user: { select: { id: true, name: true, email: true, department: true, employeeCode: true } },
+      user: { select: { id: true, name: true, email: true, department: true, employeeCode: true, reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true } },
     },
   });
 }

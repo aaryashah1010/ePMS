@@ -11,15 +11,21 @@ export default function LandingDashboard() {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleOfficerNavigation = async (route) => {
+  const handleOfficerNavigation = async (roleType) => {
     setErrorMsg('');
     try {
-      const res = await userAPI.getReportees();
-      const reportees = res.data.reportees || [];
-      if (reportees.length > 0) {
-        navigate(route);
+      let res;
+      if (roleType === 'reporting') res = await userAPI.getReportees();
+      else if (roleType === 'reviewing') res = await userAPI.getReviewees();
+      else if (roleType === 'accepting') res = await userAPI.getAppraisees();
+
+      const employees = res?.data?.reportees || res?.data?.reviewees || res?.data?.appraisees || [];
+      
+      if (employees.length > 0) {
+        navigate(`/officer/${roleType}/dashboard`);
       } else {
-        setErrorMsg('Access Denied: You are not assigned as an officer for any employees.');
+        const contextualTerm = roleType === 'reporting' ? 'reportees' : roleType === 'reviewing' ? 'reviewees' : 'appraisees';
+        setErrorMsg(`Access Denied: You do not have any ${contextualTerm} assigned to you for this space.`);
       }
     } catch (error) {
       setErrorMsg('Failed to verify access. Please try again later.');
@@ -46,19 +52,19 @@ export default function LandingDashboard() {
           <p style={cardDescStyle}>Manage your own goals, mid-year review, and annual appraisal.</p>
         </div>
 
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #10b981, #047857)' }} onClick={() => handleOfficerNavigation('/officer/dashboard')}>
+        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #10b981, #047857)' }} onClick={() => handleOfficerNavigation('reporting')}>
           <div style={iconStyle}>👥</div>
           <h2 style={cardTitleStyle}>Reporting Officer Space</h2>
           <p style={cardDescStyle}>Review goals and provide initial ratings for your direct reportees.</p>
         </div>
 
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #8b5cf6, #5b21b6)' }} onClick={() => handleOfficerNavigation('/officer/dashboard')}>
+        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #8b5cf6, #5b21b6)' }} onClick={() => handleOfficerNavigation('reviewing')}>
           <div style={iconStyle}>🔍</div>
           <h2 style={cardTitleStyle}>Reviewing Officer Space</h2>
           <p style={cardDescStyle}>Review and adjust ratings for employees under your review cycle.</p>
         </div>
 
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #f59e0b, #b45309)' }} onClick={() => handleOfficerNavigation('/officer/dashboard')}>
+        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #f59e0b, #b45309)' }} onClick={() => handleOfficerNavigation('accepting')}>
           <div style={iconStyle}>✅</div>
           <h2 style={cardTitleStyle}>Accepting Officer Space</h2>
           <p style={cardDescStyle}>Provide final approval for appraisals within your hierarchy.</p>

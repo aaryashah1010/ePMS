@@ -42,6 +42,8 @@ export const userAPI = {
   update: (id, data) => api.put(`/users/${id}`, data),
   getProfile: () => api.get('/users/profile'),
   getReportees: () => api.get('/users/reportees'),
+  getReviewees: () => api.get('/users/reviewees'),
+  getAppraisees: () => api.get('/users/appraisees'),
 };
 
 // --- Cycles ---

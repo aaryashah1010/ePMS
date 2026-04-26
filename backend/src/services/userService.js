@@ -122,4 +122,18 @@ async function getReportees(officerId) {
   });
 }
 
-module.exports = { createUser, getAllUsers, getUserById, updateUser, getReportees };
+async function getReviewees(officerId) {
+  return prisma.user.findMany({
+    where: { reviewingOfficerId: officerId, isActive: true },
+    select: { id: true, name: true, email: true, role: true, department: true, employeeCode: true },
+  });
+}
+
+async function getAppraisees(officerId) {
+  return prisma.user.findMany({
+    where: { acceptingOfficerId: officerId, isActive: true },
+    select: { id: true, name: true, email: true, role: true, department: true, employeeCode: true },
+  });
+}
+
+module.exports = { createUser, getAllUsers, getUserById, updateUser, getReportees, getReviewees, getAppraisees };

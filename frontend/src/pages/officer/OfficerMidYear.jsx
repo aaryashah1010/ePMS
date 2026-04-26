@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
 import { midYearAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function OfficerMidYear() {
+  const { user } = useAuth();
+  const { roleType } = useParams();
   const [cycleId, setCycleId] = useState('');
   const [midReviews, setMidReviews] = useState([]);
   const [msg, setMsg] = useState({ type: '', text: '' });
@@ -18,13 +22,20 @@ export default function OfficerMidYear() {
     if (!cid) return;
     try {
       const m = await midYearAPI.getTeam(cid);
-      setMidReviews(m.data.reviews || []);
+      const allReviews = m.data.reviews || [];
+      const filtered = allReviews.filter(r => {
+        if (roleType === 'reporting') return r.user.reportingOfficerId === user.id;
+        if (roleType === 'reviewing') return r.user.reviewingOfficerId === user.id && r.status === 'REPORTING_DONE';
+        if (roleType === 'accepting') return r.user.acceptingOfficerId === user.id && r.status === 'REPORTING_DONE';
+        return false;
+      });
+      setMidReviews(filtered);
     } catch (err) {
       setMidReviews([]);
     }
   };
 
-  useEffect(() => { load(cycleId); }, [cycleId]);
+  useEffect(() => { load(cycleId); }, [cycleId, roleType, user.id]);
 
   const handleAddRemark = async (userId) => {
     const remarks = remarkMap[userId];
@@ -43,9 +54,13 @@ export default function OfficerMidYear() {
     } finally { setSubmitting(''); }
   };
 
+  let contextualTarget = 'Reportees';
+  if (roleType === 'reviewing') contextualTarget = 'Reviewees';
+  if (roleType === 'accepting') contextualTarget = 'Appraisees';
+
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Reviews (Team)</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Reviews ({contextualTarget})</h1>
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} minPhase="MID_YEAR_REVIEW" />
       </div>
@@ -55,7 +70,7 @@ export default function OfficerMidYear() {
           <Alert type={msg.type || 'info'} message={msg.text} />
 
           {midReviews.length === 0 ? (
-            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No mid-year reviews submitted.</p></Card>
+            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No mid-year reviews submitted from {contextualTarget.toLowerCase()}.</p></Card>
           ) : (
             midReviews.map((r) => (
               <Card key={r.id} title={`${r.user?.name} — Mid-Year`} style={{ marginBottom: 16 }}>
@@ -71,7 +86,7 @@ export default function OfficerMidYear() {
                     <p style={{ fontSize: 13, marginTop: 4 }}>{r.reportingRemarks}</p>
                   </div>
                 )}
-                {r.status === 'SUBMITTED' && (
+                {r.status === 'SUBMITTED' && roleType === 'reporting' && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ marginBottom: 12 }}>
                       <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Manager Rating (1-5)</label>

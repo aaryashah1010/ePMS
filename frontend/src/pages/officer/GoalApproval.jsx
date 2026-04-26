@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
@@ -10,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function GoalApproval() {
   const { user } = useAuth();
+  const { roleType } = useParams();
   const [cycleId, setCycleId] = useState('');
   const [kpas, setKpas] = useState([]);
   const [msg, setMsg] = useState({ type: '', text: '' });
@@ -19,14 +21,22 @@ export default function GoalApproval() {
   const load = async (cid) => {
     if (!cid) return;
     try {
+      // getTeam returns all kpas for the officer, so we must filter by roleType
       const k = await kpaAPI.getTeam(cid);
-      setKpas(k.data.kpas || []);
+      const allKpas = k.data.kpas || [];
+      const filtered = allKpas.filter(kpa => {
+        if (roleType === 'reporting') return kpa.user.reportingOfficerId === user.id;
+        if (roleType === 'reviewing') return kpa.user.reviewingOfficerId === user.id && kpa.status === 'REPORTING_DONE';
+        if (roleType === 'accepting') return kpa.user.acceptingOfficerId === user.id && kpa.status === 'REPORTING_DONE';
+        return false;
+      });
+      setKpas(filtered);
     } catch (err) {
       setKpas([]);
     }
   };
 
-  useEffect(() => { load(cycleId); }, [cycleId]);
+  useEffect(() => { load(cycleId); }, [cycleId, roleType, user.id]);
 
   const handleReview = async (userId, action) => {
     const remarks = remarkMap[userId];
@@ -52,9 +62,13 @@ export default function GoalApproval() {
     byEmployee[uid].kpas.push(k);
   }
 
+  let contextualTarget = 'Reportees';
+  if (roleType === 'reviewing') contextualTarget = 'Reviewees';
+  if (roleType === 'accepting') contextualTarget = 'Appraisees';
+
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Goal Approvals</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>{contextualTarget} Goal Approvals</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} />
@@ -65,7 +79,7 @@ export default function GoalApproval() {
           <Alert type={msg.type || 'info'} message={msg.text} />
 
           {Object.values(byEmployee).length === 0 ? (
-            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs from team members.</p></Card>
+            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs from {contextualTarget.toLowerCase()}.</p></Card>
           ) : (
             Object.values(byEmployee).map(({ user: emp, kpas: empKpas }) => {
               const hasSubmitted = empKpas.some(k => k.status === 'SUBMITTED');
@@ -87,7 +101,7 @@ export default function GoalApproval() {
                     Total weight: {empKpas.reduce((s, k) => s + k.weightage, 0)}%
                   </div>
                   
-                  {hasSubmitted && emp.reportingOfficerId === user.id && (
+                  {hasSubmitted && roleType === 'reporting' && (
                     <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
                       <textarea
                         value={remarkMap[emp.id] || ''}

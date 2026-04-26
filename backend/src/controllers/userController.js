@@ -39,6 +39,20 @@ async function getMyReportees(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function getMyReviewees(req, res, next) {
+  try {
+    const reviewees = await userService.getReviewees(req.user.id);
+    res.json({ success: true, reviewees });
+  } catch (err) { next(err); }
+}
+
+async function getMyAppraisees(req, res, next) {
+  try {
+    const appraisees = await userService.getAppraisees(req.user.id);
+    res.json({ success: true, appraisees });
+  } catch (err) { next(err); }
+}
+
 async function getProfile(req, res, next) {
   try {
     const user = await userService.getUserById(req.user.id);
@@ -46,4 +60,4 @@ async function getProfile(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { createUser, getAllUsers, getUserById, updateUser, getMyReportees, getProfile };
+module.exports = { createUser, getAllUsers, getUserById, updateUser, getMyReportees, getMyReviewees, getMyAppraisees, getProfile };
