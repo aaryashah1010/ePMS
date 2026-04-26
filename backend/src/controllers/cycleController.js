@@ -54,4 +54,12 @@ async function getActiveCycle(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { createCycle, getAllCycles, getCycleById, updateCycle, advancePhase, closeCycle, getActiveCycle };
+async function deleteCycle(req, res, next) {
+  try {
+    await cycleService.deleteCycle(req.params.id);
+    await logAudit({ userId: req.user.id, action: 'DELETE_CYCLE', entity: 'AppraisalCycle', entityId: req.params.id });
+    res.json({ success: true, message: 'Cycle deleted successfully' });
+  } catch (err) { next(err); }
+}
+
+module.exports = { createCycle, getAllCycles, getCycleById, updateCycle, advancePhase, closeCycle, getActiveCycle, deleteCycle };

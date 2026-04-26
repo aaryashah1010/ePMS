@@ -228,7 +228,11 @@ export default function RatingPage() {
                       <input
                         type="number" min="0" max={k.weightage} step="0.1"
                         value={kpaRatings[k.id]?.rating || ''}
-                        onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: Math.min(Math.max(0, e.target.value), k.weightage) } }))}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (val !== '' && Number(val) > k.weightage) val = k.weightage.toString();
+                          setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: val } }));
+                        }}
                         placeholder={`Max ${k.weightage}`}
                         style={ratingInputStyle}
                         disabled={!isEditable}
@@ -274,7 +278,11 @@ export default function RatingPage() {
                             <input
                               type="number" min="1" max="5" step="0.1"
                               value={attrRatings[attr.id]?.rating || ''}
-                              onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { rating: e.target.value } }))}
+                              onChange={(e) => {
+                                let val = e.target.value;
+                                if (val !== '' && Number(val) > 5) val = '5';
+                                setAttrRatings((p) => ({ ...p, [attr.id]: { rating: val } }));
+                              }}
                               placeholder="1–5"
                               style={ratingInputStyle}
                               disabled={!isEditable}

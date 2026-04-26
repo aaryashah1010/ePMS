@@ -16,8 +16,12 @@ const auditRoutes = require('./src/routes/audit');
 const attributeRoutes = require('./src/routes/attributes');
 
 const { errorHandler, notFound } = require('./src/middleware/errorHandler');
+const { initCycleScheduler } = require('./src/cron/cycleScheduler');
 
 const app = express();
+
+// Initialize cron jobs
+initCycleScheduler();
 
 // Security middleware
 app.use(helmet());

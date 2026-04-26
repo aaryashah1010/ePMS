@@ -78,7 +78,11 @@ export default function OfficerMidYear() {
                       <input
                         type="number" min="1" max="5" step="0.1"
                         value={ratingMap[r.userId] || ''}
-                        onChange={(e) => setRatingMap((prev) => ({ ...prev, [r.userId]: e.target.value }))}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (val !== '' && Number(val) > 5) val = '5';
+                          setRatingMap((prev) => ({ ...prev, [r.userId]: val }));
+                        }}
                         placeholder="1-5"
                         style={{ width: 80, padding: '6px 10px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, fontWeight: 700 }}
                       />

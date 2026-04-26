@@ -99,7 +99,11 @@ export default function MidYearReview() {
                 type="number" min="1" max="5" step="0.1"
                 style={{ ...inputStyle, width: 120 }}
                 value={selfRating}
-                onChange={(e) => setSelfRating(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  if (val !== '' && Number(val) > 5) val = '5';
+                  setSelfRating(val);
+                }}
                 placeholder="1–5"
                 disabled={isLocked}
               />
