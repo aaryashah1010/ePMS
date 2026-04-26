@@ -195,7 +195,7 @@ async function getPendingWork(cycleId) {
       if (!myr || myr.status !== 'REPORTING_DONE') {
         pendingEmployees.push(emp.name);
       }
-    } else if (cycle.phase === 'APPRAISAL') {
+    } else if (cycle.phase === 'ANNUAL_APPRAISAL') {
       const app = await prisma.annualAppraisal.findUnique({ where: { userId_cycleId: { userId: emp.id, cycleId } } });
       if (!app || (app.status !== 'FINALIZED' && app.status !== 'ACCEPTING_DONE')) {
         pendingEmployees.push(emp.name);
