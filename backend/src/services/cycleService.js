@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { NotFoundError, ValidationError } = require('../utils/errors');
+const { sendEmail } = require('../utils/emailService');
 
 const PHASE_ORDER = ['GOAL_SETTING', 'MID_YEAR_REVIEW', 'ANNUAL_APPRAISAL'];
 
@@ -16,7 +17,21 @@ async function createCycle(data) {
     throw new ValidationError('End date must be after start date');
   }
 
-  return prisma.appraisalCycle.create({ data });
+  const cycle = await prisma.appraisalCycle.create({ data });
+
+  prisma.user.findMany({ where: { role: 'EMPLOYEE', isActive: true }, select: { email: true } })
+    .then(employees => {
+      employees.forEach(emp => {
+        sendEmail(
+          emp.email,
+          `New Appraisal Cycle: ${cycle.name}`,
+          `Hello,\n\nA new appraisal cycle "${cycle.name}" for the year ${cycle.year} has been created.\n\nThe current phase is ${cycle.phase.replace(/_/g, ' ')}.\n\nPlease log in to the e-PMS portal to view your dashboard.`
+        ).catch(err => console.error(`Failed to send cycle email to ${emp.email}:`, err));
+      });
+    })
+    .catch(err => console.error('Failed to fetch employees for cycle email:', err));
+
+  return cycle;
 }
 
 async function getAllCycles(filters = {}) {
@@ -59,7 +74,23 @@ async function updateCycle(id, data) {
     throw new ValidationError('End date must be after start date');
   }
 
-  return prisma.appraisalCycle.update({ where: { id }, data });
+  const updatedCycle = await prisma.appraisalCycle.update({ where: { id }, data });
+
+  if (data.status && data.status !== cycle.status) {
+    prisma.user.findMany({ where: { role: 'EMPLOYEE', isActive: true }, select: { email: true } })
+      .then(employees => {
+        employees.forEach(emp => {
+          sendEmail(
+            emp.email,
+            `Appraisal Cycle Update: ${updatedCycle.name}`,
+            `Hello,\n\nThe status of the appraisal cycle "${updatedCycle.name}" has been changed to ${data.status}.\n\nPlease log in to the e-PMS portal for details.`
+          ).catch(err => console.error(`Failed to send update email to ${emp.email}:`, err));
+        });
+      })
+      .catch(err => console.error('Failed to fetch employees for cycle update email:', err));
+  }
+
+  return updatedCycle;
 }
 
 async function advancePhase(id) {
@@ -68,19 +99,51 @@ async function advancePhase(id) {
   if (cycle.status === 'CLOSED') throw new ValidationError('Cycle is already closed');
 
   const currentIndex = PHASE_ORDER.indexOf(cycle.phase);
+  let updatedCycle;
   if (currentIndex === PHASE_ORDER.length - 1) {
-    return prisma.appraisalCycle.update({ where: { id }, data: { status: 'CLOSED' } });
+    updatedCycle = await prisma.appraisalCycle.update({ where: { id }, data: { status: 'CLOSED' } });
+  } else {
+    updatedCycle = await prisma.appraisalCycle.update({
+      where: { id },
+      data: { phase: PHASE_ORDER[currentIndex + 1] },
+    });
   }
-  return prisma.appraisalCycle.update({
-    where: { id },
-    data: { phase: PHASE_ORDER[currentIndex + 1] },
-  });
+
+  const newStatus = updatedCycle.status === 'CLOSED' ? 'officially closed' : `advanced to the ${updatedCycle.phase.replace(/_/g, ' ')} phase`;
+  
+  prisma.user.findMany({ where: { role: 'EMPLOYEE', isActive: true }, select: { email: true } })
+    .then(employees => {
+      employees.forEach(emp => {
+        sendEmail(
+          emp.email,
+          `Appraisal Cycle Update: ${updatedCycle.name}`,
+          `Hello,\n\nThe appraisal cycle "${updatedCycle.name}" has been ${newStatus}.\n\nPlease log in to the e-PMS portal to review any required actions.`
+        ).catch(err => console.error(`Failed to send phase email to ${emp.email}:`, err));
+      });
+    })
+    .catch(err => console.error('Failed to fetch employees:', err));
+
+  return updatedCycle;
 }
 
 async function closeCycle(id) {
   const cycle = await prisma.appraisalCycle.findUnique({ where: { id } });
   if (!cycle) throw new NotFoundError('Cycle');
-  return prisma.appraisalCycle.update({ where: { id }, data: { status: 'CLOSED' } });
+  const updatedCycle = await prisma.appraisalCycle.update({ where: { id }, data: { status: 'CLOSED' } });
+
+  prisma.user.findMany({ where: { role: 'EMPLOYEE', isActive: true }, select: { email: true } })
+    .then(employees => {
+      employees.forEach(emp => {
+        sendEmail(
+          emp.email,
+          `Appraisal Cycle Closed: ${updatedCycle.name}`,
+          `Hello,\n\nThe appraisal cycle "${updatedCycle.name}" has been officially closed by HR.\n\nThank you for your participation.`
+        ).catch(err => console.error(`Failed to send close email to ${emp.email}:`, err));
+      });
+    })
+    .catch(err => console.error('Failed to fetch employees:', err));
+
+  return updatedCycle;
 }
 
 async function getActiveCycle() {

@@ -100,32 +100,32 @@ export default function UserManagement() {
                 </select>
               </div>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Department</label>
-                <input style={inputStyle} value={form.department || ''} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="e.g., Engineering" />
+                <label style={labelStyle}>Department *</label>
+                <input style={inputStyle} value={form.department || ''} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="e.g., Engineering" required />
               </div>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Employee Code</label>
-                <input style={inputStyle} value={form.employeeCode || ''} onChange={(e) => setForm({ ...form, employeeCode: e.target.value })} placeholder="e.g., EMP001" />
+                <label style={labelStyle}>Employee Code *</label>
+                <input style={inputStyle} value={form.employeeCode || ''} onChange={(e) => setForm({ ...form, employeeCode: e.target.value })} placeholder="e.g., EMP001" required />
               </div>
               {form.role === 'EMPLOYEE' && (
                 <>
                   <div style={fieldStyle}>
-                    <label style={labelStyle}>Reporting Officer</label>
-                    <select style={inputStyle} value={form.reportingOfficerId || ''} onChange={(e) => setForm({ ...form, reportingOfficerId: e.target.value })}>
+                    <label style={labelStyle}>Reporting Officer *</label>
+                    <select style={inputStyle} value={form.reportingOfficerId || ''} onChange={(e) => setForm({ ...form, reportingOfficerId: e.target.value })} required>
                       <option value="">-- None --</option>
                       {officers.filter((o) => o.role === 'REPORTING_OFFICER').map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                   <div style={fieldStyle}>
-                    <label style={labelStyle}>Reviewing Officer</label>
-                    <select style={inputStyle} value={form.reviewingOfficerId || ''} onChange={(e) => setForm({ ...form, reviewingOfficerId: e.target.value })}>
+                    <label style={labelStyle}>Reviewing Officer *</label>
+                    <select style={inputStyle} value={form.reviewingOfficerId || ''} onChange={(e) => setForm({ ...form, reviewingOfficerId: e.target.value })} required>
                       <option value="">-- None --</option>
                       {officers.filter((o) => o.role === 'REVIEWING_OFFICER').map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                   <div style={fieldStyle}>
-                    <label style={labelStyle}>Accepting Officer</label>
-                    <select style={inputStyle} value={form.acceptingOfficerId || ''} onChange={(e) => setForm({ ...form, acceptingOfficerId: e.target.value })}>
+                    <label style={labelStyle}>Accepting Officer *</label>
+                    <select style={inputStyle} value={form.acceptingOfficerId || ''} onChange={(e) => setForm({ ...form, acceptingOfficerId: e.target.value })} required>
                       <option value="">-- None --</option>
                       {officers.filter((o) => o.role === 'ACCEPTING_OFFICER').map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>

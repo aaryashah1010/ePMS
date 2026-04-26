@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const prisma = require('../utils/prisma');
 const { NotFoundError, ConflictError } = require('../utils/errors');
+const { sendEmail } = require('../utils/emailService');
 
 async function createUser(data) {
   const exists = await prisma.user.findUnique({ where: { email: data.email } });
@@ -24,6 +25,16 @@ async function createUser(data) {
         acceptingOfficerId: user.acceptingOfficerId,
       }
     });
+  }
+
+  try {
+    await sendEmail(
+      user.email,
+      'Welcome to e-PMS',
+      `Hello ${user.name},\n\nYour account has been created successfully in the Employee Performance Management System (e-PMS).\n\nYour login email: ${user.email}\nYour password: ${data.password}\n\nPlease log in to access your portal.`
+    );
+  } catch (err) {
+    console.error('Failed to send welcome email:', err);
   }
 
   return user;
