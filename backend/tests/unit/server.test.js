@@ -41,6 +41,7 @@ test('server wires middleware, routes, scheduler, and starts listening', () => {
     './src/routes/reports': { name: 'report-routes' },
     './src/routes/audit': { name: 'audit-routes' },
     './src/routes/attributes': { name: 'attribute-routes' },
+    './src/routes/ceo': { name: 'ceo-routes' },
   };
 
   const originalLog = console.log;
@@ -81,4 +82,5 @@ test('server wires middleware, routes, scheduler, and starts listening', () => {
   assert.ok(mountedPaths.includes('/api/reports'));
   assert.ok(mountedPaths.includes('/api/audit'));
   assert.ok(mountedPaths.includes('/api/attributes'));
+  assert.ok(mountedPaths.includes('/api/ceo'));
 });

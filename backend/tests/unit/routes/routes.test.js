@@ -27,6 +27,7 @@ function loadRouter(modulePath, controllerMock) {
     '../controllers/reportController': controllerMock,
     '../controllers/auditController': controllerMock,
     '../controllers/attributeController': controllerMock,
+    '../controllers/ceoDashboardController': controllerMock,
     '../middleware/auth': { authenticate },
     '../middleware/rbac': { authorize },
   });
@@ -195,6 +196,20 @@ test('appraisal routes include self, officer, rating, and HR finalization endpoi
       { path: '/cycle/:cycleId/finalize-all', methods: ['post'] },
     ],
   );
+});
+
+test('ceo routes expose the dashboard endpoints behind MD authorization', () => {
+  const ceoPath = path.join(__dirname, '../../../src/routes/ceo.js');
+  const { router, authorizeCalls } = loadRouter(ceoPath, makeControllerMock(['getDashboard']));
+
+  assert.deepEqual(
+    getRouteDescriptors(router).map(({ path, methods }) => ({ path, methods })),
+    [
+      { path: '/dashboard', methods: ['get'] },
+      { path: '/dashboard/:cycleId', methods: ['get'] },
+    ],
+  );
+  assert.ok(authorizeCalls.some((roles) => roles.includes('MANAGING_DIRECTOR')));
 });
 
 test('report, audit, and attribute routers expose their expected endpoints', () => {
