@@ -3,6 +3,7 @@ const { logAudit } = require('../utils/auditLogger');
 
 async function getMyAppraisal(req, res, next) {
   try {
+    await appraisalService.getOrCreateAppraisal(req.user.id, req.params.cycleId);
     const appraisal = await appraisalService.getAppraisalFull(req.user.id, req.params.cycleId);
     res.json({ success: true, appraisal });
   } catch (err) { next(err); }
