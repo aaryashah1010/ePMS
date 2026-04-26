@@ -5,6 +5,7 @@ import Button from '../../components/Button';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
+import ConfirmModal from '../../components/ConfirmModal';
 import { kpaAPI } from '../../services/api';
 
 const EMPTY_FORM = { title: '', description: '', weightage: '' };
@@ -17,6 +18,7 @@ export default function GoalSetting() {
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
 
   const totalWeight = kpas.reduce((s, k) => s + k.weightage, 0);
   const isSubmitted = kpas.length > 0 && kpas.every((k) => k.status === 'SUBMITTED');
@@ -80,15 +82,24 @@ export default function GoalSetting() {
     } finally { setLoading(false); }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this KPA?')) return;
-    try {
-      await kpaAPI.delete(id);
-      setMsg({ type: 'success', text: 'KPA deleted.' });
-      loadKpas(cycleId);
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Delete failed' });
-    }
+  const handleDelete = (id) => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Delete KPA',
+      message: 'Are you sure you want to delete this KPA?',
+      confirmText: 'Delete',
+      variant: 'danger',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await kpaAPI.delete(id);
+          setMsg({ type: 'success', text: 'KPA deleted.' });
+          loadKpas(cycleId);
+        } catch (err) {
+          setMsg({ type: 'error', text: err.response?.data?.message || 'Delete failed' });
+        }
+      }
+    });
   };
 
   const handleEdit = (kpa) => {
@@ -96,16 +107,25 @@ export default function GoalSetting() {
     setForm({ title: kpa.title, description: kpa.description || '', weightage: kpa.weightage });
   };
 
-  const handleSubmitAll = async () => {
-    if (!window.confirm('Submit all KPAs? This cannot be undone.')) return;
-    setSubmitting(true);
-    try {
-      const r = await kpaAPI.submit(cycleId);
-      setMsg({ type: 'success', text: r.data.message });
-      loadKpas(cycleId);
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Submission failed' });
-    } finally { setSubmitting(false); }
+  const handleSubmitAll = () => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Submit KPAs',
+      message: 'Submit all KPAs? This cannot be undone.',
+      confirmText: 'Submit All',
+      variant: 'success',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setSubmitting(true);
+        try {
+          const r = await kpaAPI.submit(cycleId);
+          setMsg({ type: 'success', text: r.data.message });
+          loadKpas(cycleId);
+        } catch (err) {
+          setMsg({ type: 'error', text: err.response?.data?.message || 'Submission failed' });
+        } finally { setSubmitting(false); }
+      }
+    });
   };
 
   return (
@@ -214,6 +234,10 @@ export default function GoalSetting() {
           </div>
         </>
       )}
+      <ConfirmModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
     </Layout>
   );
 }

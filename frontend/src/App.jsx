@@ -22,6 +22,7 @@ import RatingPage from './pages/officer/RatingPage';
 // HR
 import AdminDashboard from './pages/hr/AdminDashboard';
 import CycleManagement from './pages/hr/CycleManagement';
+import CycleDetails from './pages/hr/CycleDetails';
 import UserManagement from './pages/hr/UserManagement';
 import Reports from './pages/hr/Reports';
 import AttributeManagement from './pages/hr/AttributeManagement';
@@ -65,6 +66,7 @@ export default function App() {
           {/* HR */}
           <Route path="/hr/dashboard" element={<ProtectedRoute roles={HR}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/hr/cycles" element={<ProtectedRoute roles={HR}><CycleManagement /></ProtectedRoute>} />
+          <Route path="/hr/cycles/:id" element={<ProtectedRoute roles={HR}><CycleDetails /></ProtectedRoute>} />
           <Route path="/hr/users" element={<ProtectedRoute roles={HR}><UserManagement /></ProtectedRoute>} />
           <Route path="/hr/reports" element={<ProtectedRoute roles={HR}><Reports /></ProtectedRoute>} />
           <Route path="/hr/attributes" element={<ProtectedRoute roles={HR}><AttributeManagement /></ProtectedRoute>} />

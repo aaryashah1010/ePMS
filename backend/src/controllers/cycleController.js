@@ -62,4 +62,11 @@ async function deleteCycle(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { createCycle, getAllCycles, getCycleById, updateCycle, advancePhase, closeCycle, getActiveCycle, deleteCycle };
+async function getPendingWork(req, res, next) {
+  try {
+    const pending = await cycleService.getPendingWork(req.params.id);
+    res.json({ success: true, ...pending });
+  } catch (err) { next(err); }
+}
+
+module.exports = { createCycle, getAllCycles, getCycleById, updateCycle, advancePhase, closeCycle, getActiveCycle, deleteCycle, getPendingWork };

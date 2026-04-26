@@ -5,6 +5,7 @@ import Button from '../../components/Button';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
+import ConfirmModal from '../../components/ConfirmModal';
 import { appraisalAPI, kpaAPI, attributeAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -24,6 +25,7 @@ export default function SelfAppraisal() {
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
   const { user } = useAuth(); // Needed to check if ratedBy is self
 
   const load = async (cid) => {
@@ -83,18 +85,27 @@ export default function SelfAppraisal() {
     } finally { setSaving(false); }
   };
 
-  const handleSubmit = async () => {
-    if (!window.confirm('Submit appraisal? This cannot be undone.')) return;
-    setSubmitting(true);
-    try {
-      await handleSaveRatingsOnly();
-      await appraisalAPI.updateSelf(cycleId, achievements); // ensure last achievements saved
-      await appraisalAPI.submit(cycleId);
-      setMsg({ type: 'success', text: 'Appraisal submitted. Your reporting officer will now review it.' });
-      load(cycleId);
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Submit failed' });
-    } finally { setSubmitting(false); }
+  const handleSubmit = () => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Submit Appraisal',
+      message: 'Submit appraisal? This cannot be undone.',
+      confirmText: 'Submit',
+      variant: 'primary',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setSubmitting(true);
+        try {
+          await handleSaveRatingsOnly();
+          await appraisalAPI.updateSelf(cycleId, achievements); // ensure last achievements saved
+          await appraisalAPI.submit(cycleId);
+          setMsg({ type: 'success', text: 'Appraisal submitted. Your reporting officer will now review it.' });
+          load(cycleId);
+        } catch (err) {
+          setMsg({ type: 'error', text: err.response?.data?.message || 'Submit failed' });
+        } finally { setSubmitting(false); }
+      }
+    });
   };
 
   const isDraft = !appraisal || appraisal.status === 'DRAFT';
@@ -270,6 +281,10 @@ export default function SelfAppraisal() {
           )}
         </>
       )}
+      <ConfirmModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
     </Layout>
   );
 }

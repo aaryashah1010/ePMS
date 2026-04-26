@@ -4,7 +4,8 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
-import { cycleAPI, appraisalAPI } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
+import { cycleAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const EMPTY_FORM = {
@@ -17,9 +18,9 @@ const PHASES = ['GOAL_SETTING', 'MID_YEAR_REVIEW', 'ANNUAL_APPRAISAL'];
 
 export default function CycleManagement() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [cycles, setCycles] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
@@ -39,14 +40,12 @@ export default function CycleManagement() {
       return;
     }
 
-    if (!editingId) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const start = new Date(form.startDate);
-      if (start < today) {
-        setMsg({ type: 'error', text: 'Start date cannot be in the past.' });
-        return;
-      }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(form.startDate);
+    if (start < today) {
+      setMsg({ type: 'error', text: 'Start date cannot be in the past.' });
+      return;
     }
 
     setLoading(true);
@@ -58,84 +57,14 @@ export default function CycleManagement() {
         valuesWeight: parseFloat(form.valuesWeight),
         competenciesWeight: parseFloat(form.competenciesWeight)
       };
-      
-      if (editingId) {
-        await cycleAPI.update(editingId, data);
-        setMsg({ type: 'success', text: 'Cycle updated.' });
-      } else {
-        await cycleAPI.create(data);
-        setMsg({ type: 'success', text: 'Cycle created.' });
-      }
-      
+      await cycleAPI.create(data);
+      setMsg({ type: 'success', text: 'Cycle created successfully.' });
       setForm(EMPTY_FORM);
-      setEditingId(null);
       setShowForm(false);
       load();
     } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Failed' });
+      setMsg({ type: 'error', text: err.response?.data?.message || 'Operation failed' });
     } finally { setLoading(false); }
-  };
-
-  const handleAdvance = async (id) => {
-    if (!window.confirm('Advance to next phase?')) return;
-    try {
-      await cycleAPI.advancePhase(id);
-      setMsg({ type: 'success', text: 'Phase advanced.' });
-      load();
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Failed' });
-    }
-  };
-
-  const handleClose = async (id) => {
-    if (!window.confirm('Close this cycle? This cannot be undone.')) return;
-    try {
-      await cycleAPI.close(id);
-      setMsg({ type: 'success', text: 'Cycle closed.' });
-      load();
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Failed' });
-    }
-  };
-
-  const handleFinalizeAll = async (cycleId) => {
-    if (!window.confirm('Finalize all ACCEPTING_DONE appraisals?')) return;
-    try {
-      const r = await appraisalAPI.finalizeAll(cycleId);
-      setMsg({ type: 'success', text: `Finalized ${r.data.finalized} appraisals.` });
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Failed' });
-    }
-  };
-
-  const handleEdit = (cycle) => {
-    setForm({
-      name: cycle.name,
-      year: cycle.year,
-      phase: cycle.phase,
-      status: cycle.status,
-      startDate: cycle.startDate.split('T')[0],
-      endDate: cycle.endDate.split('T')[0],
-      description: cycle.description || '',
-      kpaWeight: cycle.kpaWeight,
-      valuesWeight: cycle.valuesWeight,
-      competenciesWeight: cycle.competenciesWeight
-    });
-    setEditingId(cycle.id);
-    setShowForm(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this cycle?")) return;
-    if (!window.confirm("Are you absolutely sure? This will delete the cycle and all related data permanently.")) return;
-    try {
-      await cycleAPI.delete(id);
-      setMsg({ type: 'success', text: 'Cycle deleted successfully.' });
-      load();
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Failed to delete' });
-    }
   };
 
   return (
@@ -146,7 +75,6 @@ export default function CycleManagement() {
           setShowForm(!showForm);
           if (showForm) {
             setForm(EMPTY_FORM);
-            setEditingId(null);
           }
         }}>
           {showForm ? 'Cancel' : '+ New Cycle'}
@@ -156,7 +84,7 @@ export default function CycleManagement() {
       <Alert type={msg.type || 'info'} message={msg.text} />
 
       {showForm && (
-        <Card title={editingId ? "Edit Appraisal Cycle" : "Create New Appraisal Cycle"} style={{ marginBottom: 20 }}>
+        <Card title="Create New Appraisal Cycle" style={{ marginBottom: 20 }}>
           <form onSubmit={handleSubmit}>
             <div style={gridStyle}>
               <div style={fieldStyle}>
@@ -173,15 +101,6 @@ export default function CycleManagement() {
                   {PHASES.map((p) => <option key={p} value={p}>{p.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>
-              {editingId && (
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>Status *</label>
-                  <select style={inputStyle} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="CLOSED">CLOSED</option>
-                  </select>
-                </div>
-              )}
               <div style={fieldStyle}>
                 <label style={labelStyle}>Start Date *</label>
                 <input type="date" style={inputStyle} value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} required />
@@ -213,14 +132,7 @@ export default function CycleManagement() {
               <textarea style={{ ...inputStyle, height: 60, resize: 'vertical' }} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional description" />
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <Button type="submit" loading={loading}>{editingId ? 'Update Cycle' : 'Create Cycle'}</Button>
-              {editingId && (
-                <Button type="button" variant="secondary" onClick={() => {
-                  setForm(EMPTY_FORM);
-                  setEditingId(null);
-                  setShowForm(false);
-                }}>Cancel Edit</Button>
-              )}
+              <Button type="submit" loading={loading}>Create Cycle</Button>
             </div>
           </form>
         </Card>
@@ -230,32 +142,25 @@ export default function CycleManagement() {
         <Card><p style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>No cycles created yet.</p></Card>
       ) : (
         cycles.map((c) => (
-          <Card key={c.id} style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{c.name}</div>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <Badge label={c.status} />
-                  <Badge label={c.phase} />
-                  <span style={{ fontSize: 13, color: '#64748b' }}>Year: {c.year}</span>
+          <div key={c.id} style={{ cursor: 'pointer', marginBottom: 16 }} onClick={() => navigate(`/hr/cycles/${c.id}`)}>
+            <Card style={{ transition: 'all 0.2s', ':hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{c.name}</div>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <Badge label={c.status} />
+                    <Badge label={c.phase} />
+                    <span style={{ fontSize: 13, color: '#64748b' }}>Year: {c.year}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#94a3b8' }}>
+                    {new Date(c.startDate).toLocaleDateString()} – {new Date(c.endDate).toLocaleDateString()}
+                  </div>
+                  {c.description && <p style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>{c.description}</p>}
                 </div>
-                <div style={{ fontSize: 13, color: '#94a3b8' }}>
-                  {new Date(c.startDate).toLocaleDateString()} – {new Date(c.endDate).toLocaleDateString()}
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#2563eb' }}>
+                  Manage Details &rarr;
                 </div>
-                {c.description && <p style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>{c.description}</p>}
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <Button size="sm" variant="secondary" onClick={() => handleEdit(c)}>Edit</Button>
-                {c.status === 'ACTIVE' && (
-                  <>
-                    <Button size="sm" variant="warning" onClick={() => handleAdvance(c.id)}>Advance Phase</Button>
-                    <Button size="sm" variant="success" onClick={() => handleFinalizeAll(c.id)}>Finalize All</Button>
-                    <Button size="sm" variant="danger" onClick={() => handleClose(c.id)}>Close Cycle</Button>
-                  </>
-                )}
-                <Button size="sm" style={{ background: '#ef4444', color: 'white', border: 'none' }} onClick={() => handleDelete(c.id)}>Delete</Button>
-              </div>
-            </div>
 
             {/* Phase Timeline */}
             <div style={{ display: 'flex', gap: 0, marginTop: 16, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
@@ -273,7 +178,8 @@ export default function CycleManagement() {
                 );
               })}
             </div>
-          </Card>
+            </Card>
+          </div>
         ))
       )}
     </Layout>

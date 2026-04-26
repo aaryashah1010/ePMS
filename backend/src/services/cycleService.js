@@ -56,19 +56,15 @@ async function updateCycle(id, data) {
   const cycle = await prisma.appraisalCycle.findUnique({ where: { id } });
   if (!cycle) throw new NotFoundError('Cycle');
   
-  if (data.startDate) data.startDate = new Date(data.startDate);
+  // Prevent updating core fields after creation
+  delete data.name;
+  delete data.startDate;
+  delete data.year;
+
   if (data.endDate) data.endDate = new Date(data.endDate);
 
-  const startDateToCompare = data.startDate || cycle.startDate;
+  const startDateToCompare = cycle.startDate;
   const endDateToCompare = data.endDate || cycle.endDate;
-
-  if (data.startDate && data.startDate.getTime() !== cycle.startDate.getTime()) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (data.startDate < today) {
-      throw new ValidationError('Start date cannot be in the past');
-    }
-  }
 
   if (endDateToCompare < startDateToCompare) {
     throw new ValidationError('End date must be after start date');
@@ -175,4 +171,39 @@ async function deleteCycle(id) {
   ]);
 }
 
-module.exports = { createCycle, getAllCycles, getCycleById, updateCycle, advancePhase, closeCycle, getActiveCycle, deleteCycle };
+async function getPendingWork(cycleId) {
+  const cycle = await prisma.appraisalCycle.findUnique({ where: { id: cycleId } });
+  if (!cycle) throw new NotFoundError('Cycle');
+
+  const employees = await prisma.user.findMany({ 
+    where: { role: 'EMPLOYEE', isActive: true },
+    select: { id: true, name: true, employeeCode: true }
+  });
+
+  const pendingEmployees = [];
+
+  for (const emp of employees) {
+    if (cycle.phase === 'GOAL_SETTING') {
+      const kpas = await prisma.kpaGoal.findMany({ where: { userId: emp.id, cycleId } });
+      const totalWeight = kpas.reduce((sum, k) => sum + k.weightage, 0);
+      const allAccepted = kpas.length > 0 && kpas.every(k => k.status === 'REPORTING_DONE');
+      if (totalWeight !== 100 || !allAccepted) {
+        pendingEmployees.push(emp.name);
+      }
+    } else if (cycle.phase === 'MID_YEAR_REVIEW') {
+      const myr = await prisma.midYearReview.findUnique({ where: { userId_cycleId: { userId: emp.id, cycleId } } });
+      if (!myr || myr.status !== 'REPORTING_DONE') {
+        pendingEmployees.push(emp.name);
+      }
+    } else if (cycle.phase === 'APPRAISAL') {
+      const app = await prisma.annualAppraisal.findUnique({ where: { userId_cycleId: { userId: emp.id, cycleId } } });
+      if (!app || (app.status !== 'FINALIZED' && app.status !== 'ACCEPTING_DONE')) {
+        pendingEmployees.push(emp.name);
+      }
+    }
+  }
+
+  return { pendingCount: pendingEmployees.length, pendingEmployees };
+}
+
+module.exports = { createCycle, getAllCycles, getCycleById, getActiveCycle, updateCycle, advancePhase, closeCycle, deleteCycle, getPendingWork };

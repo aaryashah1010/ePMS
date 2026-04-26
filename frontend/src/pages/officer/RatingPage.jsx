@@ -324,7 +324,7 @@ export default function RatingPage() {
               {isEditable && (
                 <>
                   <Button onClick={handleSaveRatings} loading={saving} variant="outline">Save Draft Ratings</Button>
-                  <Button onClick={handleAction} loading={acting} variant="success">
+                  <Button onClick={handleActionClick} loading={acting} variant="success">
                     {action.actionLabel}
                   </Button>
                 </>
@@ -333,6 +333,10 @@ export default function RatingPage() {
           </Card>
         </div>
       )}
+      <ConfirmModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
     </Layout>
   );
 }

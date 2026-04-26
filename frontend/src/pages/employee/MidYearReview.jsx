@@ -5,6 +5,7 @@ import Button from '../../components/Button';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
+import ConfirmModal from '../../components/ConfirmModal';
 import { midYearAPI } from '../../services/api';
 
 export default function MidYearReview() {
@@ -15,6 +16,7 @@ export default function MidYearReview() {
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
 
   const load = async (cid) => {
     if (!cid) return;
@@ -45,20 +47,28 @@ export default function MidYearReview() {
     } finally { setSaving(false); }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!progress.trim()) return setMsg({ type: 'error', text: 'Progress update is required.' });
-    if (!window.confirm('Submit mid-year review? You cannot edit after submission.')) return;
-    setSubmitting(true);
-    setMsg({ type: '', text: '' });
-    try {
-      // Always save first (creates if not exists, updates if draft), then submit
-      await midYearAPI.save(cycleId, { progress, selfRating: selfRating ? parseFloat(selfRating) : null });
-      await midYearAPI.submit(cycleId);
-      setMsg({ type: 'success', text: 'Mid-year review submitted successfully.' });
-      load(cycleId);
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Submission failed' });
-    } finally { setSubmitting(false); }
+    setModalConfig({
+      isOpen: true,
+      title: 'Submit Mid-Year Review',
+      message: 'Submit mid-year review? You cannot edit after submission.',
+      confirmText: 'Submit',
+      variant: 'primary',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setSubmitting(true);
+        setMsg({ type: '', text: '' });
+        try {
+          await midYearAPI.save(cycleId, { progress, selfRating: selfRating ? parseFloat(selfRating) : null });
+          await midYearAPI.submit(cycleId);
+          setMsg({ type: 'success', text: 'Mid-year review submitted successfully.' });
+          load(cycleId);
+        } catch (err) {
+          setMsg({ type: 'error', text: err.response?.data?.message || 'Submission failed' });
+        } finally { setSubmitting(false); }
+      }
+    });
   };
 
   const isLocked = review?.status === 'SUBMITTED' || review?.status === 'REPORTING_DONE';
@@ -126,6 +136,10 @@ export default function MidYearReview() {
           )}
         </>
       )}
+      <ConfirmModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
     </Layout>
   );
 }

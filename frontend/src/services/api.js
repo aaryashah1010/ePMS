@@ -54,6 +54,7 @@ export const cycleAPI = {
   delete: (id) => api.delete(`/cycles/${id}`),
   advancePhase: (id) => api.post(`/cycles/${id}/advance-phase`),
   close: (id) => api.post(`/cycles/${id}/close`),
+  getPendingWork: (id) => api.get(`/cycles/${id}/pending-work`),
 };
 
 // --- KPA ---

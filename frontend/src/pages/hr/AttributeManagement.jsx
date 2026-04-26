@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Alert from '../../components/Alert';
+import ConfirmModal from '../../components/ConfirmModal';
 import { attributeAPI } from '../../services/api';
 
 const EMPTY_FORM = { name: '', type: 'VALUES', description: '' };
@@ -14,6 +15,7 @@ export default function AttributeManagement() {
   const [showForm, setShowForm] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
 
   const load = () => attributeAPI.getAll().then((r) => setAttributes(r.data.attributes || [])).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -35,13 +37,22 @@ export default function AttributeManagement() {
     } finally { setLoading(false); }
   };
 
-  const handleDeactivate = async (id) => {
-    if (!window.confirm('Deactivate this attribute?')) return;
-    try {
-      await attributeAPI.delete(id);
-      setMsg({ type: 'success', text: 'Deactivated.' });
-      load();
-    } catch { setMsg({ type: 'error', text: 'Failed' }); }
+  const handleDeactivate = (id) => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Deactivate Attribute',
+      message: 'Are you sure you want to deactivate this attribute? It will no longer be available for new cycles.',
+      confirmText: 'Deactivate',
+      variant: 'danger',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await attributeAPI.delete(id);
+          setMsg({ type: 'success', text: 'Deactivated.' });
+          load();
+        } catch { setMsg({ type: 'error', text: 'Failed' }); }
+      }
+    });
   };
 
   const values = attributes.filter((a) => a.type === 'VALUES');
@@ -113,6 +124,10 @@ export default function AttributeManagement() {
           </Card>
         ))}
       </div>
+      <ConfirmModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
     </Layout>
   );
 }
