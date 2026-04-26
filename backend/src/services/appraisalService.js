@@ -165,15 +165,16 @@ async function advanceAppraisalStatus(officerId, userId, cycleId, remarks, expec
 }
 
 async function getAppraisalsForOfficer(officerId, cycleId, officerRole) {
-  let whereCondition = {};
-  if (officerRole === 'REPORTING_OFFICER') {
-    whereCondition = { cycleId, user: { reportingOfficerId: officerId } };
-  } else if (officerRole === 'REVIEWING_OFFICER') {
-    whereCondition = { cycleId, user: { reviewingOfficerId: officerId } };
-  } else if (officerRole === 'ACCEPTING_OFFICER') {
-    whereCondition = { cycleId, user: { acceptingOfficerId: officerId } };
-  }
-
+  let whereCondition = {
+    cycleId,
+    user: {
+      OR: [
+        { reportingOfficerId: officerId },
+        { reviewingOfficerId: officerId },
+        { acceptingOfficerId: officerId },
+      ]
+    }
+  };
   return prisma.annualAppraisal.findMany({
     where: whereCondition,
     include: {

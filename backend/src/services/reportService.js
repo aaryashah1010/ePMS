@@ -88,19 +88,46 @@ async function ratingDistribution(cycleId) {
 }
 
 async function cycleProgress(cycleId) {
+  const cycle = await prisma.appraisalCycle.findUnique({ where: { id: cycleId } });
+  if (!cycle) return { goalProgress: {}, midYearProgress: {}, appraisalProgress: {} };
+
   const statuses = ['DRAFT', 'SUBMITTED', 'REPORTING_DONE', 'REVIEWING_DONE', 'ACCEPTING_DONE', 'FINALIZED'];
+  
+  const goalProgress = {};
+  const midYearProgress = {};
+  const appraisalProgress = {};
+  
+  for (const s of statuses) {
+    goalProgress[s] = 0;
+    midYearProgress[s] = 0;
+    appraisalProgress[s] = 0;
+  }
+
+  // Goal Setting Stats
+  const kpas = await prisma.kpaGoal.groupBy({
+    by: ['status'],
+    where: { cycleId },
+    _count: { status: true },
+  });
+  for (const k of kpas) if (goalProgress[k.status] !== undefined) goalProgress[k.status] += k._count.status;
+
+  // Mid-Year Stats
+  const myrs = await prisma.midYearReview.groupBy({
+    by: ['status'],
+    where: { cycleId },
+    _count: { status: true },
+  });
+  for (const m of myrs) if (midYearProgress[m.status] !== undefined) midYearProgress[m.status] += m._count.status;
+
+  // Annual Appraisal Stats
   const appraisals = await prisma.annualAppraisal.groupBy({
     by: ['status'],
     where: { cycleId },
     _count: { status: true },
   });
+  for (const a of appraisals) if (appraisalProgress[a.status] !== undefined) appraisalProgress[a.status] += a._count.status;
 
-  const progress = {};
-  for (const s of statuses) progress[s] = 0;
-  for (const a of appraisals) progress[a.status] = a._count.status;
-
-  const total = Object.values(progress).reduce((s, v) => s + v, 0);
-  return { total, progress };
+  return { goalProgress, midYearProgress, appraisalProgress };
 }
 
 module.exports = { individualReport, departmentSummary, ratingDistribution, cycleProgress };

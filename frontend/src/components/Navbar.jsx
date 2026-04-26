@@ -2,41 +2,27 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ROLE_LABELS = {
-  EMPLOYEE: 'Employee',
-  REPORTING_OFFICER: 'Reporting Officer',
-  REVIEWING_OFFICER: 'Reviewing Officer',
-  ACCEPTING_OFFICER: 'Accepting Officer',
-  HR: 'HR Admin',
-};
-
 const NAV_LINKS = {
-  EMPLOYEE: [
-    { to: '/employee/dashboard', label: 'Dashboard' },
-    { to: '/employee/goals', label: 'Goal Setting' },
-    { to: '/employee/mid-year', label: 'Mid-Year' },
-    { to: '/employee/appraisal', label: 'Self Appraisal' },
-  ],
-  REPORTING_OFFICER: [
-    { to: '/officer/dashboard', label: 'Dashboard' },
-    { to: '/officer/goals', label: 'Goal Review' },
-    { to: '/officer/mid-year', label: 'Mid-Year' },
-    { to: '/officer/ratings', label: 'Rate Team' },
-  ],
-  REVIEWING_OFFICER: [
-    { to: '/officer/dashboard', label: 'Dashboard' },
-    { to: '/officer/ratings', label: 'Review Appraisals' },
-  ],
-  ACCEPTING_OFFICER: [
-    { to: '/officer/dashboard', label: 'Dashboard' },
-    { to: '/officer/ratings', label: 'Accept Appraisals' },
-  ],
   HR: [
     { to: '/hr/dashboard', label: 'Dashboard' },
     { to: '/hr/cycles', label: 'Cycles' },
     { to: '/hr/users', label: 'Users' },
     { to: '/hr/reports', label: 'Reports' },
     { to: '/hr/attributes', label: 'Attributes' },
+  ],
+  EMPLOYEE_SPACE: [
+    { to: '/employee/dashboard', label: 'Home' },
+    { to: '/employee/summary', label: 'My Appraisal Space' },
+    { to: '/employee/goals', label: 'Goal Setting' },
+    { to: '/employee/mid-year', label: 'Mid-Year' },
+    { to: '/employee/appraisal', label: 'Annual Appraisal' },
+  ],
+  OFFICER_SPACE: [
+    { to: '/employee/dashboard', label: 'Home' },
+    { to: '/officer/dashboard', label: 'Team Dashboard' },
+    { to: '/officer/goals', label: 'Goal Review' },
+    { to: '/officer/mid-year', label: 'Team Mid-Year' },
+    { to: '/officer/ratings', label: 'Rate Team' },
   ],
 };
 
@@ -46,7 +32,27 @@ export default function Navbar() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  const links = NAV_LINKS[user?.role] || [];
+  // Determine which links to show
+  let links = [];
+  let positionLabel = '';
+
+  if (user?.role === 'HR') {
+    links = NAV_LINKS.HR;
+    positionLabel = 'HR Admin';
+  } else {
+    // For all other roles (treated as EMPLOYEE)
+    if (location.pathname === '/employee/dashboard') {
+      links = [{ to: '/employee/dashboard', label: 'Home' }];
+      positionLabel = '';
+    } else if (location.pathname.startsWith('/officer')) {
+      links = NAV_LINKS.OFFICER_SPACE;
+      positionLabel = 'Reporting Officer'; // Default generic term as requested
+    } else {
+      links = NAV_LINKS.EMPLOYEE_SPACE;
+      // When in employee routes, show nothing as position
+      positionLabel = '';
+    }
+  }
 
   const handleLogout = () => {
     logout();
@@ -65,7 +71,10 @@ export default function Navbar() {
           <Link
             key={link.to}
             to={link.to}
-            style={{ ...linkStyle, ...(location.pathname.startsWith(link.to) ? activeLinkStyle : {}) }}
+            style={{ 
+              ...linkStyle, 
+              ...(location.pathname === link.to || (link.to !== '/employee/dashboard' && location.pathname.startsWith(link.to)) ? activeLinkStyle : {}) 
+            }}
           >
             {link.label}
           </Link>
@@ -77,7 +86,7 @@ export default function Navbar() {
           <span style={avatarStyle}>{user?.name?.charAt(0)}</span>
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontSize: 14, fontWeight: 600 }}>{user?.name}</div>
-            <div style={{ fontSize: 11, color: '#94a3b8' }}>{ROLE_LABELS[user?.role]}</div>
+            {positionLabel && <div style={{ fontSize: 11, color: '#94a3b8' }}>{positionLabel}</div>}
           </div>
           <span style={{ marginLeft: 6 }}>▾</span>
         </button>

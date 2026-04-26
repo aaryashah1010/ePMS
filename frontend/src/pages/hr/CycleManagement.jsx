@@ -96,9 +96,9 @@ export default function CycleManagement() {
                 <input type="number" style={inputStyle} value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} required />
               </div>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Opening Phase *</label>
-                <select style={inputStyle} value={form.phase} onChange={(e) => setForm({ ...form, phase: e.target.value })}>
-                  {PHASES.map((p) => <option key={p} value={p}>{p.replace(/_/g, ' ')}</option>)}
+                <label style={labelStyle}>Opening Phase (Locked)</label>
+                <select style={{...inputStyle, background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed'}} value={form.phase} disabled>
+                  <option value="GOAL_SETTING">GOAL SETTING</option>
                 </select>
               </div>
               <div style={fieldStyle}>

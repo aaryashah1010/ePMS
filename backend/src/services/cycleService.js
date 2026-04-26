@@ -143,7 +143,7 @@ async function closeCycle(id) {
 }
 
 async function getActiveCycle() {
-  return prisma.appraisalCycle.findFirst({
+  return prisma.appraisalCycle.findMany({
     where: { status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
   });

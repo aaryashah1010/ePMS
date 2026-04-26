@@ -6,8 +6,10 @@ import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
 import Button from '../../components/Button';
 import { kpaAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function GoalApproval() {
+  const { user } = useAuth();
   const [cycleId, setCycleId] = useState('');
   const [kpas, setKpas] = useState([]);
   const [msg, setMsg] = useState({ type: '', text: '' });
@@ -85,7 +87,7 @@ export default function GoalApproval() {
                     Total weight: {empKpas.reduce((s, k) => s + k.weightage, 0)}%
                   </div>
                   
-                  {hasSubmitted && (
+                  {hasSubmitted && emp.reportingOfficerId === user.id && (
                     <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
                       <textarea
                         value={remarkMap[emp.id] || ''}

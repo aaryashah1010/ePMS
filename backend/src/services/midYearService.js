@@ -64,7 +64,13 @@ async function getMidYearForOfficer(officerId, cycleId) {
   return prisma.midYearReview.findMany({
     where: {
       cycleId,
-      user: { reportingOfficerId: officerId },
+      user: {
+        OR: [
+          { reportingOfficerId: officerId },
+          { reviewingOfficerId: officerId },
+          { acceptingOfficerId: officerId },
+        ]
+      },
     },
     include: {
       user: { select: { id: true, name: true, email: true, department: true, employeeCode: true } },

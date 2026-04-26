@@ -22,52 +22,7 @@ async function main() {
     },
   });
 
-  // Create Accepting Officer
-  const accepting = await prisma.user.upsert({
-    where: { email: 'director@epms.com' },
-    update: {},
-    create: {
-      name: 'Director Smith',
-      email: 'director@epms.com',
-      password: await bcrypt.hash('director@123', rounds),
-      role: 'ACCEPTING_OFFICER',
-      department: 'Engineering',
-      employeeCode: 'DIR001',
-    },
-  });
-
-  // Create Reviewing Officer
-  const reviewing = await prisma.user.upsert({
-    where: { email: 'manager@epms.com' },
-    update: {},
-    create: {
-      name: 'Manager Johnson',
-      email: 'manager@epms.com',
-      password: await bcrypt.hash('manager@123', rounds),
-      role: 'REVIEWING_OFFICER',
-      department: 'Engineering',
-      employeeCode: 'MGR001',
-      acceptingOfficerId: accepting.id,
-    },
-  });
-
-  // Create Reporting Officer
-  const reporting = await prisma.user.upsert({
-    where: { email: 'teamlead@epms.com' },
-    update: {},
-    create: {
-      name: 'Team Lead Wilson',
-      email: 'teamlead@epms.com',
-      password: await bcrypt.hash('teamlead@123', rounds),
-      role: 'REPORTING_OFFICER',
-      department: 'Engineering',
-      employeeCode: 'TL001',
-      reviewingOfficerId: reviewing.id,
-      acceptingOfficerId: accepting.id,
-    },
-  });
-
-  // Create Employees
+  // Create Employee
   const emp1 = await prisma.user.upsert({
     where: { email: 'alice@epms.com' },
     update: {},
@@ -78,9 +33,6 @@ async function main() {
       role: 'EMPLOYEE',
       department: 'Engineering',
       employeeCode: 'EMP001',
-      reportingOfficerId: reporting.id,
-      reviewingOfficerId: reviewing.id,
-      acceptingOfficerId: accepting.id,
     },
   });
 
@@ -94,9 +46,6 @@ async function main() {
       role: 'EMPLOYEE',
       department: 'Engineering',
       employeeCode: 'EMP002',
-      reportingOfficerId: reporting.id,
-      reviewingOfficerId: reviewing.id,
-      acceptingOfficerId: accepting.id,
     },
   });
 
@@ -110,9 +59,19 @@ async function main() {
       role: 'EMPLOYEE',
       department: 'Design',
       employeeCode: 'EMP003',
-      reportingOfficerId: reporting.id,
-      reviewingOfficerId: reviewing.id,
-      acceptingOfficerId: accepting.id,
+    },
+  });
+
+  const emp4 = await prisma.user.upsert({
+    where: { email: 'dave@epms.com' },
+    update: {},
+    create: {
+      name: 'Dave Analyst',
+      email: 'dave@epms.com',
+      password: await bcrypt.hash('dave@123', rounds),
+      role: 'EMPLOYEE',
+      department: 'Data',
+      employeeCode: 'EMP004',
     },
   });
 
@@ -160,55 +119,13 @@ async function main() {
     });
   }
 
-  // Create sample KPA goals for alice
-  const kpa1 = await prisma.kpaGoal.upsert({
-    where: { id: 'seed-kpa-alice-1' },
-    update: {},
-    create: {
-      id: 'seed-kpa-alice-1',
-      userId: emp1.id,
-      cycleId: cycle.id,
-      title: 'Deliver Project Alpha',
-      description: 'Successfully deliver Project Alpha by Q3 2024 with zero critical bugs',
-      weightage: 40,
-    },
-  });
-
-  const kpa2 = await prisma.kpaGoal.upsert({
-    where: { id: 'seed-kpa-alice-2' },
-    update: {},
-    create: {
-      id: 'seed-kpa-alice-2',
-      userId: emp1.id,
-      cycleId: cycle.id,
-      title: 'Code Quality Improvement',
-      description: 'Improve test coverage from 60% to 85% across all modules',
-      weightage: 30,
-    },
-  });
-
-  const kpa3 = await prisma.kpaGoal.upsert({
-    where: { id: 'seed-kpa-alice-3' },
-    update: {},
-    create: {
-      id: 'seed-kpa-alice-3',
-      userId: emp1.id,
-      cycleId: cycle.id,
-      title: 'Team Knowledge Sharing',
-      description: 'Conduct at least 6 technical knowledge sharing sessions',
-      weightage: 30,
-    },
-  });
-
   console.log('Seed completed successfully!');
   console.log('\n--- Login Credentials ---');
   console.log('HR Admin:          hr@epms.com         / hr@123');
-  console.log('Accepting Officer: director@epms.com   / director@123');
-  console.log('Reviewing Officer: manager@epms.com    / manager@123');
-  console.log('Reporting Officer: teamlead@epms.com   / teamlead@123');
-  console.log('Employee 1:        alice@epms.com      / alice@123');
+  console.log('Employee:          alice@epms.com      / alice@123');
   console.log('Employee 2:        bob@epms.com        / bob@123');
   console.log('Employee 3:        carol@epms.com      / carol@123');
+  console.log('Employee 4:        dave@epms.com       / dave@123');
 }
 
 main()

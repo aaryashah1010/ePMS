@@ -30,11 +30,24 @@ export default function RatingPage() {
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
 
-  const action = ACTION_MAP[user?.role];
+  const getActionForAppraisal = (a) => {
+    if (!a) return null;
+    if (a.status === 'SUBMITTED' && a.user?.reportingOfficerId === user.id) return ACTION_MAP.REPORTING_OFFICER;
+    if (a.status === 'REPORTING_DONE' && a.user?.reviewingOfficerId === user.id) return ACTION_MAP.REVIEWING_OFFICER;
+    if (a.status === 'REVIEWING_DONE' && a.user?.acceptingOfficerId === user.id) return ACTION_MAP.ACCEPTING_OFFICER;
+    
+    // Fallbacks for checking permissions
+    if (a.user?.reportingOfficerId === user.id) return ACTION_MAP.REPORTING_OFFICER;
+    if (a.user?.reviewingOfficerId === user.id) return ACTION_MAP.REVIEWING_OFFICER;
+    if (a.user?.acceptingOfficerId === user.id) return ACTION_MAP.ACCEPTING_OFFICER;
+    return null;
+  };
+
+  const action = getActionForAppraisal(selected);
   
   let prevRatingLabel = "Previous Officer's Rating";
-  if (user?.role === 'REVIEWING_OFFICER') prevRatingLabel = "Reporting Officer's Rating";
-  else if (user?.role === 'ACCEPTING_OFFICER') prevRatingLabel = "Reviewing Officer's Rating";
+  if (action === ACTION_MAP.REVIEWING_OFFICER) prevRatingLabel = "Reporting Officer's Rating";
+  else if (action === ACTION_MAP.ACCEPTING_OFFICER) prevRatingLabel = "Reviewing Officer's Rating";
 
   const loadAppraisals = async (cid) => {
     if (!cid) return;
@@ -165,7 +178,9 @@ export default function RatingPage() {
           {appraisals.length === 0 ? (
             <p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No appraisals available.</p>
           ) : (
-            appraisals.map((a) => (
+            appraisals.map((a) => {
+              const rowAction = getActionForAppraisal(a);
+              return (
               <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{a.user?.name}</div>
@@ -174,15 +189,14 @@ export default function RatingPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Badge label={a.status} />
-                  {action && a.status === action.requiredStatus && (
+                  {rowAction && a.status === rowAction.requiredStatus ? (
                     <Button size="sm" onClick={() => loadFull(a)}>Rate & Review</Button>
-                  )}
-                  {a.status !== action?.requiredStatus && (
+                  ) : (
                     <Button size="sm" variant="outline" onClick={() => loadFull(a)}>View</Button>
                   )}
                 </div>
               </div>
-            ))
+            )})
           )}
         </Card>
       )}

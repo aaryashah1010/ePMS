@@ -6,7 +6,7 @@ import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import { userAPI } from '../../services/api';
 
-const ROLES = ['EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'];
+const ROLES = ['EMPLOYEE', 'HR'];
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'EMPLOYEE', department: '', employeeCode: '', reportingOfficerId: '', reviewingOfficerId: '', acceptingOfficerId: '' };
 
 export default function UserManagement() {
@@ -25,7 +25,7 @@ export default function UserManagement() {
     (u) => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const officers = users.filter((u) => ['REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'].includes(u.role));
+  const officers = users.filter((u) => u.role !== 'HR');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,27 +107,27 @@ export default function UserManagement() {
                 <label style={labelStyle}>Employee Code *</label>
                 <input style={inputStyle} value={form.employeeCode || ''} onChange={(e) => setForm({ ...form, employeeCode: e.target.value })} placeholder="e.g., EMP001" required />
               </div>
-              {form.role === 'EMPLOYEE' && (
+              {form.role !== 'HR' && (
                 <>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Reporting Officer *</label>
                     <select style={inputStyle} value={form.reportingOfficerId || ''} onChange={(e) => setForm({ ...form, reportingOfficerId: e.target.value })} required>
                       <option value="">-- None --</option>
-                      {officers.filter((o) => o.role === 'REPORTING_OFFICER').map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                      {officers.filter((o) => o.id !== editId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Reviewing Officer *</label>
                     <select style={inputStyle} value={form.reviewingOfficerId || ''} onChange={(e) => setForm({ ...form, reviewingOfficerId: e.target.value })} required>
                       <option value="">-- None --</option>
-                      {officers.filter((o) => o.role === 'REVIEWING_OFFICER').map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                      {officers.filter((o) => o.id !== editId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Accepting Officer *</label>
                     <select style={inputStyle} value={form.acceptingOfficerId || ''} onChange={(e) => setForm({ ...form, acceptingOfficerId: e.target.value })} required>
                       <option value="">-- None --</option>
-                      {officers.filter((o) => o.role === 'ACCEPTING_OFFICER').map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                      {officers.filter((o) => o.id !== editId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                 </>

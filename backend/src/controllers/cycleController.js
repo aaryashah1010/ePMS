@@ -49,8 +49,8 @@ async function closeCycle(req, res, next) {
 
 async function getActiveCycle(req, res, next) {
   try {
-    const cycle = await cycleService.getActiveCycle();
-    res.json({ success: true, cycle });
+    const cycles = await cycleService.getActiveCycle();
+    res.json({ success: true, cycles });
   } catch (err) { next(err); }
 }
 

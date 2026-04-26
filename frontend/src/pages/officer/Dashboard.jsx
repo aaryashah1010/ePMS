@@ -8,24 +8,34 @@ import { cycleAPI, appraisalAPI, userAPI } from '../../services/api';
 
 export default function OfficerDashboard() {
   const { user } = useAuth();
-  const [cycle, setCycle] = useState(null);
-  const [appraisals, setAppraisals] = useState([]);
+  const [activeCycles, setActiveCycles] = useState([]);
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const [appraisalsMap, setAppraisalsMap] = useState({});
   const [reportees, setReportees] = useState([]);
 
   useEffect(() => {
     cycleAPI.getActive().then(async (r) => {
-      const c = r.data.cycle;
-      setCycle(c);
-      if (c) {
-        const [ap, rp] = await Promise.allSettled([
-          appraisalAPI.getTeam(c.id),
-          userAPI.getReportees(),
-        ]);
-        if (ap.status === 'fulfilled') setAppraisals(ap.value.data.appraisals || []);
-        if (rp.status === 'fulfilled') setReportees(rp.value.data.reportees || []);
-      }
+      const list = r.data.cycles || [];
+      setActiveCycles(list);
+
+      const rp = await userAPI.getReportees().catch(() => ({ data: {} }));
+      setReportees(rp.data?.reportees || []);
+
+      const newMap = {};
+      await Promise.all(list.map(async (c) => {
+        const ap = await appraisalAPI.getTeam(c.id).catch(() => ({ data: {} }));
+        newMap[c.id] = ap.data?.appraisals || [];
+      }));
+      setAppraisalsMap(newMap);
     }).catch(() => {});
   }, []);
+
+
+  const cycle = activeCycles[cycleIndex] || null;
+  const appraisals = cycle ? (appraisalsMap[cycle.id] || []) : [];
+
+  const handlePrev = () => setCycleIndex((prev) => (prev - 1 + activeCycles.length) % activeCycles.length);
+  const handleNext = () => setCycleIndex((prev) => (prev + 1) % activeCycles.length);
 
   const ROLE_LABELS = {
     REPORTING_OFFICER: 'Reporting Officer',
@@ -57,9 +67,18 @@ export default function OfficerDashboard() {
             <div>
               <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Active Cycle</div>
               <div style={{ fontSize: 22, fontWeight: 800 }}>{cycle.name}</div>
-              <div style={{ fontSize: 14, opacity: 0.8, marginTop: 4 }}>Phase: {cycle.phase?.replace(/_/g, ' ')}</div>
+              <div style={{ fontSize: 14, opacity: 0.8, marginTop: 4, display: 'flex', gap: 10 }}>
+                <span>Phase: {cycle.phase?.replace(/_/g, ' ')}</span>
+                <Badge label={cycle.status} />
+              </div>
             </div>
-            <Badge label={cycle.status} />
+            {activeCycles.length > 1 && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={handlePrev} style={arrowBtnStyleWhite}>←</button>
+                <span style={{ fontSize: 13, alignSelf: 'center', opacity: 0.8 }}>{cycleIndex + 1} / {activeCycles.length}</span>
+                <button onClick={handleNext} style={arrowBtnStyleWhite}>→</button>
+              </div>
+            )}
           </div>
         </Card>
       )}
@@ -114,3 +133,4 @@ const avatarStyle = {
   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
   fontWeight: 700, fontSize: 15, flexShrink: 0,
 };
+const arrowBtnStyleWhite = { background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' };

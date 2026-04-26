@@ -226,8 +226,8 @@ export default function CycleDetails() {
                 <input type="date" style={inputStyle} value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} required />
               </div>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Phase</label>
-                <select style={inputStyle} value={form.phase} onChange={(e) => setForm({ ...form, phase: e.target.value })}>
+                <label style={labelStyle}>Phase (Locked)</label>
+                <select style={{...inputStyle, background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed'}} value={form.phase} disabled>
                   {PHASES.map((p) => <option key={p} value={p}>{p.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>
@@ -301,8 +301,8 @@ export default function CycleDetails() {
       {/* Statistics */}
       {stats && (
         <div style={gridStyle}>
-          <Card title="Overall Progress">
-            {Object.entries(stats.progress?.progress?.progress || {}).map(([status, count]) => (
+          <Card title="Goal Setting">
+            {Object.entries(stats.progress?.progress?.goalProgress || {}).map(([status, count]) => (
               <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
                 <Badge label={status} />
                 <span style={{ fontWeight: 600 }}>{count}</span>
@@ -310,27 +310,22 @@ export default function CycleDetails() {
             ))}
           </Card>
 
-          <Card title="Rating Distribution">
-            {Object.keys(stats.distribution?.distribution || {}).length === 0 ? (
-              <p style={{ color: '#94a3b8', fontSize: 14, textAlign: 'center', padding: 20 }}>No finalized ratings yet.</p>
-            ) : (
-              <div>
-                <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>
-                  Total finalized: {stats.distribution.total}
-                </div>
-                {Object.entries(stats.distribution.percentages || {}).map(([band, pct]) => (
-                  <div key={band} style={{ marginBottom: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-                      <Badge label={band} />
-                      <span>{stats.distribution.distribution[band]} ({pct}%)</span>
-                    </div>
-                    <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3 }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: '#2563eb', borderRadius: 3 }} />
-                    </div>
-                  </div>
-                ))}
+          <Card title="Mid-Year Review">
+            {Object.entries(stats.progress?.progress?.midYearProgress || {}).map(([status, count]) => (
+              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                <Badge label={status} />
+                <span style={{ fontWeight: 600 }}>{count}</span>
               </div>
-            )}
+            ))}
+          </Card>
+
+          <Card title="Annual Appraisal">
+            {Object.entries(stats.progress?.progress?.appraisalProgress || {}).map(([status, count]) => (
+              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                <Badge label={status} />
+                <span style={{ fontWeight: 600 }}>{count}</span>
+              </div>
+            ))}
           </Card>
         </div>
       )}

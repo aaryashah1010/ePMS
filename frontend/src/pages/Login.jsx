@@ -5,9 +5,9 @@ import Alert from '../components/Alert';
 
 const ROLE_REDIRECTS = {
   EMPLOYEE: '/employee/dashboard',
-  REPORTING_OFFICER: '/officer/dashboard',
-  REVIEWING_OFFICER: '/officer/dashboard',
-  ACCEPTING_OFFICER: '/officer/dashboard',
+  REPORTING_OFFICER: '/employee/dashboard',
+  REVIEWING_OFFICER: '/employee/dashboard',
+  ACCEPTING_OFFICER: '/employee/dashboard',
   HR: '/hr/dashboard',
 };
 
@@ -75,10 +75,8 @@ export default function Login() {
           <p style={{ fontSize: 13, color: '#64748b', marginBottom: 8, fontWeight: 600 }}>Demo Accounts:</p>
           {[
             ['HR Admin', 'hr@epms.com', 'hr@123'],
-            ['Reporting Officer', 'teamlead@epms.com', 'teamlead@123'],
-            ['Reviewing Officer', 'manager@epms.com', 'manager@123'],
-            ['Accepting Officer', 'director@epms.com', 'director@123'],
             ['Employee', 'alice@epms.com', 'alice@123'],
+            ['Manager (Officer)', 'manager@epms.com', 'manager@123'],
           ].map(([role, email, pass]) => (
             <button
               key={email}

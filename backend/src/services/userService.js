@@ -71,6 +71,14 @@ async function updateUser(id, data) {
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) throw new NotFoundError('User');
 
+  if (
+    (data.reportingOfficerId && data.reportingOfficerId === id) ||
+    (data.reviewingOfficerId && data.reviewingOfficerId === id) ||
+    (data.acceptingOfficerId && data.acceptingOfficerId === id)
+  ) {
+    throw new ConflictError('A user cannot be assigned as their own reporting, reviewing, or accepting officer');
+  }
+
   if (data.password) {
     const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 10;
     data.password = await bcrypt.hash(data.password, rounds);
