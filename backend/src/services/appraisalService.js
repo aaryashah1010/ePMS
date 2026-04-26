@@ -25,7 +25,18 @@ async function getAppraisalFull(userId, cycleId) {
   const a = await prisma.annualAppraisal.findUnique({
     where: { userId_cycleId: { userId, cycleId } },
     include: {
-      user: { select: { id: true, name: true, email: true, department: true, employeeCode: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          department: true,
+          employeeCode: true,
+          reportingOfficerId: true,
+          reviewingOfficerId: true,
+          acceptingOfficerId: true,
+        }
+      },
       cycle: true,
       kpaRatings: { include: { kpaGoal: true } },
       attributeRatings: { include: { attribute: true } },
@@ -178,7 +189,18 @@ async function getAppraisalsForOfficer(officerId, cycleId, officerRole) {
   return prisma.annualAppraisal.findMany({
     where: whereCondition,
     include: {
-      user: { select: { id: true, name: true, email: true, department: true, employeeCode: true, reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          department: true,
+          employeeCode: true,
+          reportingOfficerId: true,
+          reviewingOfficerId: true,
+          acceptingOfficerId: true,
+        }
+      },
     },
     orderBy: { updatedAt: 'desc' },
   });

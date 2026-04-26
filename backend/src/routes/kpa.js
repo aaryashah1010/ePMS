@@ -12,9 +12,9 @@ router.post('/cycle/:cycleId/submit', authorize('EMPLOYEE', 'REPORTING_OFFICER',
 router.put('/:id', authorize('EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'), ctrl.updateKpa);
 router.delete('/:id', authorize('EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER'), ctrl.deleteKpa);
 
-// Officer routes
-router.post('/cycle/:cycleId/employee/:userId/review', authorize('REPORTING_OFFICER', 'HR'), ctrl.reviewKpas);
-router.get('/cycle/:cycleId/team', authorize('REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'), ctrl.getKpasForOfficer);
-router.get('/cycle/:cycleId/employee/:userId', authorize('REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'), ctrl.getEmployeeKpas);
+// Officer routes (EMPLOYEE role can also be an officer via FK relationships)
+router.post('/cycle/:cycleId/employee/:userId/review', authorize('EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'), ctrl.reviewKpas);
+router.get('/cycle/:cycleId/team', authorize('EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'), ctrl.getKpasForOfficer);
+router.get('/cycle/:cycleId/employee/:userId', authorize('EMPLOYEE', 'REPORTING_OFFICER', 'REVIEWING_OFFICER', 'ACCEPTING_OFFICER', 'HR'), ctrl.getEmployeeKpas);
 
 module.exports = router;

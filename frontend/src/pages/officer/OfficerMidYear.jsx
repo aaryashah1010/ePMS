@@ -80,7 +80,7 @@ export default function OfficerMidYear() {
                 {r.reportingRemarks && (
                   <div style={{ marginTop: 12, background: '#f0fdf4', padding: 12, borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <strong style={{ fontSize: 13 }}>Your Remarks:</strong>
+                      <strong style={{ fontSize: 13 }}>Reporting Officer Remarks:</strong>
                       {r.managerRating && <strong style={{ fontSize: 13, color: '#166534' }}>Rating: {r.managerRating}</strong>}
                     </div>
                     <p style={{ fontSize: 13, marginTop: 4 }}>{r.reportingRemarks}</p>
@@ -89,7 +89,7 @@ export default function OfficerMidYear() {
                 {r.status === 'SUBMITTED' && roleType === 'reporting' && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Manager Rating (1-5)</label>
+                      <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Reporter Rating (1-5)</label>
                       <input
                         type="number" min="1" max="5" step="0.1"
                         value={ratingMap[r.userId] || ''}
