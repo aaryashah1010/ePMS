@@ -175,14 +175,19 @@ export default function SelfAppraisal() {
               />
             </div>
 
-            {/* KPA Self Ratings */}
-            {isDraft && kpas.length > 0 && (
+            {/* KPA Self Ratings — always shown, read-only after submission */}
+            {kpas.length > 0 && (
               <div style={{ marginTop: 24, marginBottom: 16 }}>
-                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Self-Rate KPAs</h4>
+                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+                  {isDraft ? 'Self-Rate KPAs' : 'Your KPA Self-Ratings'}
+                </h4>
+                {!isDraft && (
+                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
+                )}
                 {kpas.map((k) => (
-                  <div key={k.id} style={{ padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <div>
+                  <div key={k.id} style={{ padding: '14px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{k.title}</div>
                         <div style={{ fontSize: 12, color: '#64748b' }}>Weight: {k.weightage}%</div>
                       </div>
@@ -190,14 +195,26 @@ export default function SelfAppraisal() {
                         type="number" min="0" max={k.weightage} step="0.1"
                         value={kpaRatings[k.id]?.rating || ''}
                         onChange={(e) => {
+                          if (!isDraft) return;
                           let val = e.target.value;
                           if (val !== '' && Number(val) > k.weightage) val = k.weightage.toString();
                           setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: val } }));
                         }}
-                        placeholder={`Max ${k.weightage}`}
-                        style={ratingInputStyle}
+                        placeholder={isDraft ? `Max ${k.weightage}` : '—'}
+                        style={{ ...ratingInputStyle, opacity: isDraft ? 1 : 0.7, background: isDraft ? '#fff' : '#f8fafc' }}
+                        readOnly={!isDraft}
                       />
                     </div>
+                    <textarea
+                      value={kpaRatings[k.id]?.remarks || ''}
+                      onChange={(e) => {
+                        if (!isDraft) return;
+                        setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], remarks: e.target.value } }));
+                      }}
+                      placeholder={isDraft ? 'Your achievements / remarks for this KPA...' : 'No remarks entered.'}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12, resize: 'vertical', minHeight: 56, marginTop: 4, background: isDraft ? '#fff' : '#f8fafc', color: '#374151' }}
+                      readOnly={!isDraft}
+                    />
                   </div>
                 ))}
               </div>
@@ -220,6 +237,7 @@ export default function SelfAppraisal() {
                             onChange={(e) => {
                               let val = e.target.value;
                               if (val !== '' && Number(val) > 5) val = '5';
+                              if (val !== '' && Number(val) < 1) val = '1';
                               setAttrRatings((p) => ({ ...p, [attr.id]: { rating: val } }));
                             }}
                             placeholder="1–5"
@@ -243,21 +261,38 @@ export default function SelfAppraisal() {
             )}
           </Card>
 
-          {/* KPA Ratings from officer */}
-          {isFinalized && appraisal?.kpaRatings?.length > 0 && (
-            <Card title="KPA Ratings" style={{ marginTop: 20 }}>
-              {appraisal.kpaRatings.map((r) => (
-                <div key={r.id} style={ratingRowStyle}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{r.kpaGoal?.title}</div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>Weight: {r.kpaGoal?.weightage}%</div>
-                    {r.remarks && <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>Remarks: {r.remarks}</div>}
-                  </div>
-                  <div style={ratingBubble(r.rating)}>{r.rating}</div>
-                </div>
-              ))}
-            </Card>
-          )}
+          {/* KPA Ratings grouped by officer role */}
+          {isFinalized && appraisal?.kpaRatings?.length > 0 && (() => {
+            const byRater = {};
+            for (const r of appraisal.kpaRatings) {
+              if (!byRater[r.ratedBy]) byRater[r.ratedBy] = [];
+              byRater[r.ratedBy].push(r);
+            }
+            const getRaterLabel = (raterId) => {
+              if (raterId === user?.id) return { label: 'Self Rating', bg: '#f0f9ff', border: '#bae6fd' };
+              if (raterId === appraisal.user?.reportingOfficerId) return { label: 'Reporting Officer', bg: '#f0fdf4', border: '#86efac' };
+              if (raterId === appraisal.user?.reviewingOfficerId) return { label: 'Reviewing Officer', bg: '#fefce8', border: '#fde68a' };
+              if (raterId === appraisal.user?.acceptingOfficerId) return { label: 'Accepting Officer', bg: '#fdf4ff', border: '#e9d5ff' };
+              return { label: 'Officer', bg: '#f8fafc', border: '#e2e8f0' };
+            };
+            return Object.entries(byRater).map(([raterId, ratings]) => {
+              const { label, bg, border } = getRaterLabel(raterId);
+              return (
+                <Card key={raterId} title={`KPA Ratings — ${label}`} style={{ marginTop: 20, background: bg, border: `1.5px solid ${border}` }}>
+                  {ratings.map((r) => (
+                    <div key={r.id} style={ratingRowStyle}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{r.kpaGoal?.title}</div>
+                        <div style={{ fontSize: 12, color: '#64748b' }}>Weight: {r.kpaGoal?.weightage}%</div>
+                        {r.remarks && <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>Remarks: {r.remarks}</div>}
+                      </div>
+                      <div style={ratingBubble(r.rating)}>{r.rating}</div>
+                    </div>
+                  ))}
+                </Card>
+              );
+            });
+          })()}
 
           {/* Remarks chain */}
           {isFinalized && (

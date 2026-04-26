@@ -12,6 +12,7 @@ const EMPTY_FORM = { title: '', description: '', weightage: '' };
 
 export default function GoalSetting() {
   const [cycleId, setCycleId] = useState('');
+  const [selectedCycle, setSelectedCycle] = useState(null);
   const [kpas, setKpas] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
@@ -19,6 +20,8 @@ export default function GoalSetting() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
+
+  const isPhaseLocked = selectedCycle && selectedCycle.phase !== 'GOAL_SETTING';
 
   const totalWeight = kpas.reduce((s, k) => s + k.weightage, 0);
   const isSubmitted = kpas.length > 0 && kpas.every((k) => k.status === 'SUBMITTED');
@@ -133,7 +136,11 @@ export default function GoalSetting() {
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Goal Setting (KPAs)</h1>
 
       <div style={{ marginBottom: 20 }}>
-        <CycleSelector value={cycleId} onChange={setCycleId} />
+        <CycleSelector
+          value={cycleId}
+          onChange={setCycleId}
+          onCycleChange={(id, cycle) => setSelectedCycle(cycle)}
+        />
       </div>
 
       {cycleId && (
@@ -150,9 +157,15 @@ export default function GoalSetting() {
             </div>
           )}
 
+          {isPhaseLocked && (
+            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+              🔒 This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Goal Setting is now <strong>read-only</strong>.
+            </div>
+          )}
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 20, alignItems: 'start' }}>
-            {/* Form */}
-            {!isSubmitted && (
+            {/* Add KPA form - hidden when phase locked or already submitted */}
+            {!isSubmitted && !isPhaseLocked && (
               <Card title={editId ? 'Edit KPA' : 'Add New KPA'}>
                 <form onSubmit={handleSubmitForm}>
                   <div style={fieldStyle}>
@@ -184,7 +197,7 @@ export default function GoalSetting() {
                   <Button variant="secondary" size="sm" onClick={() => window.print()}>
                     Print
                   </Button>
-                  {!isSubmitted && kpas.length > 0 && (
+                  {!isSubmitted && !isPhaseLocked && kpas.length > 0 && (
                     <Button
                       variant="success"
                       size="sm"
@@ -220,7 +233,7 @@ export default function GoalSetting() {
                           <Badge label={k.status} />
                         </div>
                       </div>
-                      {k.status === 'DRAFT' && (
+                      {k.status === 'DRAFT' && !isPhaseLocked && (
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                           <Button size="sm" variant="outline" onClick={() => handleEdit(k)}>Edit</Button>
                           <Button size="sm" variant="danger" onClick={() => handleDelete(k.id)}>Delete</Button>

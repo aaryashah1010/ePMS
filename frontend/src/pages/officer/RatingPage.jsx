@@ -25,8 +25,8 @@ export default function RatingPage() {
   const [attributes, setAttributes] = useState([]);
   const [kpaRatings, setKpaRatings] = useState({});
   const [attrRatings, setAttrRatings] = useState({});
-  const [prevKpaRatings, setPrevKpaRatings] = useState({});
-  const [prevAttrRatings, setPrevAttrRatings] = useState({});
+  const [kpaHierarchy, setKpaHierarchy] = useState({});  // { raterId: { kpaGoalId: ratingObj } }
+  const [attrHierarchy, setAttrHierarchy] = useState({}); // { raterId: { attributeId: ratingObj } }
   const [remarks, setRemarks] = useState('');
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [saving, setSaving] = useState(false);
@@ -67,44 +67,63 @@ export default function RatingPage() {
     setMsg({ type: '', text: '' });
     setRemarks('');
 
-    // Load KPAs
     const kpaRes = await kpaAPI.getEmployee(cycleId, appraisal.user.id);
     const kpaList = kpaRes.data.kpas || [];
     setKpas(kpaList);
 
-    // Pre-fill existing ratings and track previous ratings
-    const kpaMap = {};
-    const prevKpaMap = {};
-    const sortedKpa = [...(appraisal.kpaRatings || [])].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
-    for (const r of sortedKpa) {
-      if (r.ratedBy === user.id) kpaMap[r.kpaGoalId] = { rating: r.rating, remarks: r.remarks || '' };
-      else prevKpaMap[r.kpaGoalId] = r;
+    // Build hierarchy maps: { raterId: { kpaGoalId: ratingObj } }
+    const kpaByRater = {};
+    for (const r of appraisal.kpaRatings || []) {
+      if (!kpaByRater[r.ratedBy]) kpaByRater[r.ratedBy] = {};
+      // Keep most recent rating per KPA per rater
+      const existing = kpaByRater[r.ratedBy][r.kpaGoalId];
+      if (!existing || new Date(r.updatedAt) > new Date(existing.updatedAt)) {
+        kpaByRater[r.ratedBy][r.kpaGoalId] = r;
+      }
     }
+    setKpaHierarchy(kpaByRater);
 
-    const attrMap = {};
-    const prevAttrMap = {};
-    const sortedAttr = [...(appraisal.attributeRatings || [])].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
-    for (const r of sortedAttr) {
-      if (r.ratedBy === user.id) attrMap[r.attributeId] = { rating: r.rating, remarks: r.remarks || '' };
-      else prevAttrMap[r.attributeId] = r;
+    const attrByRater = {};
+    for (const r of appraisal.attributeRatings || []) {
+      if (!attrByRater[r.ratedBy]) attrByRater[r.ratedBy] = {};
+      const existing = attrByRater[r.ratedBy][r.attributeId];
+      if (!existing || new Date(r.updatedAt) > new Date(existing.updatedAt)) {
+        attrByRater[r.ratedBy][r.attributeId] = r;
+      }
     }
+    setAttrHierarchy(attrByRater);
 
-    // Default current inputs to previous ratings if not already rated
+    // Pre-fill current officer's existing ratings
+    const myKpaMap = {};
+    for (const [, kpaMap] of Object.entries(kpaByRater)) {
+      for (const [kpaGoalId, r] of Object.entries(kpaMap)) {
+        if (r.ratedBy === user.id) myKpaMap[kpaGoalId] = { rating: r.rating, remarks: r.remarks || '' };
+      }
+    }
+    // If not rated yet, default to most recent previous officer's rating
+    const empId = appraisal.userId || appraisal.user?.id;
+    const reportingId = appraisal.user?.reportingOfficerId;
+    const reviewingId = appraisal.user?.reviewingOfficerId;
+    const fallbackOrder = roleType === 'reviewing' ? [reportingId, empId] : roleType === 'accepting' ? [reviewingId, reportingId, empId] : [empId];
     for (const k of kpaList) {
-      if (!kpaMap[k.id] && prevKpaMap[k.id]) {
-        kpaMap[k.id] = { rating: prevKpaMap[k.id].rating, remarks: prevKpaMap[k.id].remarks || '' };
+      if (!myKpaMap[k.id]) {
+        for (const rid of fallbackOrder) {
+          if (kpaByRater[rid]?.[k.id]) {
+            myKpaMap[k.id] = { rating: kpaByRater[rid][k.id].rating, remarks: '' };
+            break;
+          }
+        }
       }
     }
-    for (const a of appraisal.attributeRatings || []) {
-      if (!attrMap[a.attributeId] && prevAttrMap[a.attributeId]) {
-        attrMap[a.attributeId] = { rating: prevAttrMap[a.attributeId].rating, remarks: prevAttrMap[a.attributeId].remarks || '' };
-      }
-    }
+    setKpaRatings(myKpaMap);
 
-    setKpaRatings(kpaMap);
-    setPrevKpaRatings(prevKpaMap);
-    setAttrRatings(attrMap);
-    setPrevAttrRatings(prevAttrMap);
+    const myAttrMap = {};
+    for (const [, attrMap] of Object.entries(attrByRater)) {
+      for (const [attributeId, r] of Object.entries(attrMap)) {
+        if (r.ratedBy === user.id) myAttrMap[attributeId] = { rating: r.rating, remarks: r.remarks || '' };
+      }
+    }
+    setAttrRatings(myAttrMap);
   };
 
   const loadFull = async (ap) => {
@@ -154,12 +173,28 @@ export default function RatingPage() {
 
   const valuesAttrs = attributes.filter((a) => a.type === 'VALUES');
   const competencyAttrs = attributes.filter((a) => a.type === 'COMPETENCIES');
-  
   const isEditable = action && selected?.status === action.requiredStatus;
-  
+
   let contextualTarget = 'Reportees';
   if (roleType === 'reviewing') contextualTarget = 'Reviewees';
   if (roleType === 'accepting') contextualTarget = 'Appraisees';
+
+  // Build ordered list of lower-authority raters to display above current officer's input
+  const getLowerRaters = () => {
+    if (!selected) return [];
+    const empId = selected.userId || selected.user?.id;
+    const reportingId = selected.user?.reportingOfficerId;
+    const reviewingId = selected.user?.reviewingOfficerId;
+    const RATER_META = [
+      { id: empId,      label: 'Employee Self-Rating',  bg: '#f0f9ff', border: '#bae6fd' },
+      { id: reportingId, label: 'Reporting Officer',     bg: '#f0fdf4', border: '#86efac' },
+      { id: reviewingId, label: 'Reviewing Officer',     bg: '#fefce8', border: '#fde68a' },
+    ];
+    if (roleType === 'reporting') return RATER_META.slice(0, 1); // self only
+    if (roleType === 'reviewing') return RATER_META.slice(0, 2); // self + reporting
+    if (roleType === 'accepting') return RATER_META.slice(0, 3); // self + reporting + reviewing
+    return [];
+  };
 
   return (
     <Layout>
@@ -222,46 +257,59 @@ export default function RatingPage() {
           {/* KPA Ratings */}
           {kpas.length > 0 && (
             <Card title="Rate KPAs (0 – Weightage)" style={{ marginBottom: 16 }}>
-              {kpas.map((k) => (
-                <div key={k.id} style={{ padding: '14px 0', borderBottom: '1px solid #f1f5f9' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{k.title}</div>
-                      <span style={weightBadge}>{k.weightage}%</span>
-                      {prevKpaRatings[k.id] && (
-                        <div style={{ fontSize: 12, color: '#d97706', marginTop: 4, fontWeight: 600 }}>
-                          {prevRatingLabel}: {prevKpaRatings[k.id].rating}
+              {kpas.map((k) => {
+                const lowerRaters = getLowerRaters();
+                return (
+                  <div key={k.id} style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{k.title}</div>
+                    <span style={weightBadge}>{k.weightage}%</span>
+
+                    {/* Previous officer ratings hierarchy */}
+                    {lowerRaters.map(({ id, label, bg, border }) => {
+                      const prev = kpaHierarchy[id]?.[k.id];
+                      if (!prev) return null;
+                      return (
+                        <div key={id} style={{ marginTop: 10, background: bg, border: `1px solid ${border}`, borderRadius: 8, padding: '8px 12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>{label}</span>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: '#1e293b' }}>{prev.rating} / {k.weightage}</span>
+                          </div>
+                          {prev.remarks && (
+                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>"{prev.remarks}"</div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      {prevKpaRatings[k.id] && isEditable && (
-                        <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Accept or Override?</div>
-                      )}
-                      <input
-                        type="number" min="0" max={k.weightage} step="0.1"
-                        value={kpaRatings[k.id]?.rating || ''}
-                        onChange={(e) => {
-                          let val = e.target.value;
-                          if (val !== '' && Number(val) > k.weightage) val = k.weightage.toString();
-                          setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: val } }));
-                        }}
-                        placeholder={`Max ${k.weightage}`}
-                        style={ratingInputStyle}
-                        disabled={!isEditable}
-                      />
+                      );
+                    })}
+
+                    {/* Current officer's input */}
+                    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {isEditable && <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Your Rating:</div>}
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                        <input
+                          type="number" min="0" max={k.weightage} step="0.1"
+                          value={kpaRatings[k.id]?.rating || ''}
+                          onChange={(e) => {
+                            let val = e.target.value;
+                            if (val !== '' && Number(val) > k.weightage) val = k.weightage.toString();
+                            setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: val } }));
+                          }}
+                          placeholder={`Max ${k.weightage}`}
+                          style={ratingInputStyle}
+                          disabled={!isEditable}
+                        />
+                        <input
+                          type="text"
+                          value={kpaRatings[k.id]?.remarks || ''}
+                          onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], remarks: e.target.value } }))}
+                          placeholder="Remarks (optional)"
+                          style={{ flex: 1, padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
+                          disabled={!isEditable}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    value={kpaRatings[k.id]?.remarks || ''}
-                    onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], remarks: e.target.value } }))}
-                    placeholder="Remarks (optional)"
-                    style={{ width: '100%', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
-                    disabled={!isEditable}
-                  />
-                </div>
-              ))}
+                );
+              })}
             </Card>
           )}
 
@@ -272,46 +320,53 @@ export default function RatingPage() {
                 list.length > 0 && (
                   <div key={label} style={{ marginBottom: 20 }}>
                     <h4 style={{ fontSize: 14, fontWeight: 700, color: '#1e3a5f', marginBottom: 12 }}>{label}</h4>
-                    {list.map((attr) => (
-                      <div key={attr.id} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 500 }}>{attr.name}</div>
-                            <div style={{ fontSize: 12, color: '#94a3b8' }}>{attr.description}</div>
-                            {prevAttrRatings[attr.id] && (
-                              <div style={{ fontSize: 12, color: '#d97706', marginTop: 4, fontWeight: 600 }}>
-                                {prevRatingLabel}: {prevAttrRatings[attr.id].rating}
+                    {list.map((attr) => {
+                      const lowerRaters = getLowerRaters();
+                      return (
+                        <div key={attr.id} style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                          <div style={{ fontSize: 14, fontWeight: 500 }}>{attr.name}</div>
+                          {attr.description && <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>{attr.description}</div>}
+
+                          {/* Previous officer ratings hierarchy */}
+                          {lowerRaters.map(({ id, label: raterLabel, bg, border }) => {
+                            const prev = attrHierarchy[id]?.[attr.id];
+                            if (!prev) return null;
+                            return (
+                              <div key={id} style={{ marginTop: 8, background: bg, border: `1px solid ${border}`, borderRadius: 8, padding: '6px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>{raterLabel}</span>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>{prev.rating} / 5</span>
                               </div>
-                            )}
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            {prevAttrRatings[attr.id] && isEditable && (
-                              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Accept or Override?</div>
-                            )}
+                            );
+                          })}
+
+                          {/* Current officer's input */}
+                          <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                            {isEditable && <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', whiteSpace: 'nowrap' }}>Your Rating:</div>}
                             <input
                               type="number" min="1" max="5" step="0.1"
                               value={attrRatings[attr.id]?.rating || ''}
                               onChange={(e) => {
                                 let val = e.target.value;
                                 if (val !== '' && Number(val) > 5) val = '5';
+                                if (val !== '' && Number(val) < 1) val = '1';
                                 setAttrRatings((p) => ({ ...p, [attr.id]: { rating: val } }));
                               }}
                               placeholder="1–5"
                               style={ratingInputStyle}
                               disabled={!isEditable}
                             />
+                            <input
+                              type="text"
+                              value={attrRatings[attr.id]?.remarks || ''}
+                              onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { ...p[attr.id], remarks: e.target.value } }))}
+                              placeholder="Remarks (optional)"
+                              style={{ flex: 1, padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
+                              disabled={!isEditable}
+                            />
                           </div>
                         </div>
-                        <input
-                          type="text"
-                          value={attrRatings[attr.id]?.remarks || ''}
-                          onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { ...p[attr.id], remarks: e.target.value } }))}
-                          placeholder="Remarks (optional)"
-                          style={{ width: '100%', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
-                          disabled={!isEditable}
-                        />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )
               ))}

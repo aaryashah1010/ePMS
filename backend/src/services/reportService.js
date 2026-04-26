@@ -103,23 +103,38 @@ async function cycleProgress(cycleId) {
     appraisalProgress[s] = 0;
   }
 
-  // Goal Setting Stats
-  const kpas = await prisma.kpaGoal.groupBy({
-    by: ['status'],
+  // Goal Setting Stats — count distinct employees per status (not KPA count)
+  const kpaEmployees = await prisma.kpaGoal.findMany({
     where: { cycleId },
-    _count: { status: true },
+    select: { userId: true, status: true },
+    distinct: ['userId', 'status'],
   });
-  for (const k of kpas) if (goalProgress[k.status] !== undefined) goalProgress[k.status] += k._count.status;
+  // An employee's effective goal status = their "lowest" status (if any DRAFT, they're still DRAFT)
+  const kpaByUser = {};
+  for (const k of kpaEmployees) {
+    if (!kpaByUser[k.userId]) kpaByUser[k.userId] = new Set();
+    kpaByUser[k.userId].add(k.status);
+  }
+  for (const [, statusSet] of Object.entries(kpaByUser)) {
+    // Priority: DRAFT > SUBMITTED > REPORTING_DONE
+    let effectiveStatus = 'REPORTING_DONE';
+    if (statusSet.has('DRAFT')) effectiveStatus = 'DRAFT';
+    else if (statusSet.has('SUBMITTED')) effectiveStatus = 'SUBMITTED';
+    if (goalProgress[effectiveStatus] !== undefined) goalProgress[effectiveStatus]++;
+  }
 
-  // Mid-Year Stats
+  // Mid-Year Stats — count distinct employees per status
   const myrs = await prisma.midYearReview.groupBy({
-    by: ['status'],
+    by: ['userId', 'status'],
     where: { cycleId },
-    _count: { status: true },
   });
-  for (const m of myrs) if (midYearProgress[m.status] !== undefined) midYearProgress[m.status] += m._count.status;
+  const myrByUser = {};
+  for (const m of myrs) myrByUser[m.userId] = m.status;
+  for (const status of Object.values(myrByUser)) {
+    if (midYearProgress[status] !== undefined) midYearProgress[status]++;
+  }
 
-  // Annual Appraisal Stats
+  // Annual Appraisal Stats — one row per employee so groupBy works fine
   const appraisals = await prisma.annualAppraisal.groupBy({
     by: ['status'],
     where: { cycleId },

@@ -7,7 +7,8 @@ const PHASE_ORDER = {
   'ANNUAL_APPRAISAL': 3
 };
 
-export default function CycleSelector({ value, onChange, style = {}, minPhase }) {
+// onCycleChange(cycleId, cycleObject) — passes full cycle so pages can detect phase
+export default function CycleSelector({ value, onChange, onCycleChange, style = {}, minPhase, exactPhase }) {
   const [cycles, setCycles] = useState([]);
 
   useEffect(() => {
@@ -16,14 +17,26 @@ export default function CycleSelector({ value, onChange, style = {}, minPhase })
       if (minPhase) {
         list = list.filter((c) => PHASE_ORDER[c.phase] >= PHASE_ORDER[minPhase]);
       }
+      if (exactPhase) {
+        list = list.filter((c) => c.phase === exactPhase);
+      }
       setCycles(list);
     }).catch(() => {});
-  }, [minPhase]);
+  }, [minPhase, exactPhase]);
+
+  const handleChange = (e) => {
+    const id = e.target.value;
+    onChange(id);
+    if (onCycleChange) {
+      const cycle = cycles.find((c) => c.id === id) || null;
+      onCycleChange(id, cycle);
+    }
+  };
 
   return (
     <select
       value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={handleChange}
       style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #d1d5db', fontSize: 14, ...style }}
     >
       <option value="">-- Select Cycle --</option>

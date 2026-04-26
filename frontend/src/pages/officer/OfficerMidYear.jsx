@@ -12,11 +12,14 @@ export default function OfficerMidYear() {
   const { user } = useAuth();
   const { roleType } = useParams();
   const [cycleId, setCycleId] = useState('');
+  const [selectedCycle, setSelectedCycle] = useState(null);
   const [midReviews, setMidReviews] = useState([]);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [remarkMap, setRemarkMap] = useState({});
   const [ratingMap, setRatingMap] = useState({});
   const [submitting, setSubmitting] = useState('');
+
+  const isPhaseLocked = selectedCycle && selectedCycle.phase !== 'MID_YEAR_REVIEW';
 
   const load = async (cid) => {
     if (!cid) return;
@@ -62,12 +65,22 @@ export default function OfficerMidYear() {
     <Layout>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Reviews ({contextualTarget})</h1>
       <div style={{ marginBottom: 20 }}>
-        <CycleSelector value={cycleId} onChange={setCycleId} minPhase="MID_YEAR_REVIEW" />
+        <CycleSelector
+          value={cycleId}
+          onChange={setCycleId}
+          onCycleChange={(id, cycle) => setSelectedCycle(cycle)}
+        />
       </div>
 
       {cycleId && (
         <>
           <Alert type={msg.type || 'info'} message={msg.text} />
+
+          {isPhaseLocked && (
+            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+              🔒 Cycle is now in <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Mid-Year Review is <strong>read-only</strong>.
+            </div>
+          )}
 
           {midReviews.length === 0 ? (
             <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No mid-year reviews submitted from {contextualTarget.toLowerCase()}.</p></Card>
@@ -86,7 +99,7 @@ export default function OfficerMidYear() {
                     <p style={{ fontSize: 13, marginTop: 4 }}>{r.reportingRemarks}</p>
                   </div>
                 )}
-                {r.status === 'SUBMITTED' && roleType === 'reporting' && (
+                {r.status === 'SUBMITTED' && roleType === 'reporting' && !isPhaseLocked && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ marginBottom: 12 }}>
                       <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Reporter Rating (1-5)</label>
@@ -96,6 +109,7 @@ export default function OfficerMidYear() {
                         onChange={(e) => {
                           let val = e.target.value;
                           if (val !== '' && Number(val) > 5) val = '5';
+                          if (val !== '' && Number(val) < 1) val = '1';
                           setRatingMap((prev) => ({ ...prev, [r.userId]: val }));
                         }}
                         placeholder="1-5"

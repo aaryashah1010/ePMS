@@ -10,6 +10,7 @@ import { midYearAPI } from '../../services/api';
 
 export default function MidYearReview() {
   const [cycleId, setCycleId] = useState('');
+  const [selectedCycle, setSelectedCycle] = useState(null);
   const [review, setReview] = useState(null);
   const [progress, setProgress] = useState('');
   const [selfRating, setSelfRating] = useState('');
@@ -17,6 +18,8 @@ export default function MidYearReview() {
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
+
+  const isPhaseLocked = selectedCycle && selectedCycle.phase !== 'MID_YEAR_REVIEW';
 
   const load = async (cid) => {
     if (!cid) return;
@@ -71,19 +74,29 @@ export default function MidYearReview() {
     });
   };
 
-  const isLocked = review?.status === 'SUBMITTED' || review?.status === 'REPORTING_DONE';
+  const isLocked = isPhaseLocked || review?.status === 'SUBMITTED' || review?.status === 'REPORTING_DONE';
 
   return (
     <Layout>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Review</h1>
 
       <div style={{ marginBottom: 20 }}>
-        <CycleSelector value={cycleId} onChange={setCycleId} minPhase="MID_YEAR_REVIEW" />
+        <CycleSelector
+          value={cycleId}
+          onChange={setCycleId}
+          onCycleChange={(id, cycle) => setSelectedCycle(cycle)}
+        />
       </div>
 
       {cycleId && (
         <>
           <Alert type={msg.type || 'info'} message={msg.text} />
+
+          {isPhaseLocked && (
+            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+              🔒 This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Mid-Year Review is now <strong>read-only</strong>.
+            </div>
+          )}
 
           <Card title="Progress Update">
             {review && (
@@ -112,6 +125,7 @@ export default function MidYearReview() {
                 onChange={(e) => {
                   let val = e.target.value;
                   if (val !== '' && Number(val) > 5) val = '5';
+                  if (val !== '' && Number(val) < 1) val = '1';
                   setSelfRating(val);
                 }}
                 placeholder="1–5"

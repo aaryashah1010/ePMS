@@ -13,10 +13,13 @@ export default function GoalApproval() {
   const { user } = useAuth();
   const { roleType } = useParams();
   const [cycleId, setCycleId] = useState('');
+  const [selectedCycle, setSelectedCycle] = useState(null);
   const [kpas, setKpas] = useState([]);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [remarkMap, setRemarkMap] = useState({});
   const [submitting, setSubmitting] = useState('');
+
+  const isPhaseLocked = selectedCycle && selectedCycle.phase !== 'GOAL_SETTING';
 
   const load = async (cid) => {
     if (!cid) return;
@@ -71,12 +74,22 @@ export default function GoalApproval() {
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>{contextualTarget} Goal Approvals</h1>
 
       <div style={{ marginBottom: 20 }}>
-        <CycleSelector value={cycleId} onChange={setCycleId} />
+        <CycleSelector
+          value={cycleId}
+          onChange={setCycleId}
+          onCycleChange={(id, cycle) => setSelectedCycle(cycle)}
+        />
       </div>
 
       {cycleId && (
         <>
           <Alert type={msg.type || 'info'} message={msg.text} />
+
+          {isPhaseLocked && (
+            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+              🔒 Cycle is now in <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Goal review is <strong>read-only</strong>.
+            </div>
+          )}
 
           {Object.values(byEmployee).length === 0 ? (
             <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs from {contextualTarget.toLowerCase()}.</p></Card>
@@ -101,7 +114,7 @@ export default function GoalApproval() {
                     Total weight: {empKpas.reduce((s, k) => s + k.weightage, 0)}%
                   </div>
                   
-                  {hasSubmitted && roleType === 'reporting' && (
+                  {hasSubmitted && roleType === 'reporting' && !isPhaseLocked && (
                     <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
                       <textarea
                         value={remarkMap[emp.id] || ''}

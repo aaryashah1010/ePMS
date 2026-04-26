@@ -78,10 +78,10 @@ function computeFinalScore(kpaScore, valuesScore, competenciesScore, weights) {
 function getRatingBand(score) {
   if (score === null) return null;
   if (score >= 90) return 'Outstanding';
-  if (score >= 70) return 'Very Good';
-  if (score >= 60) return 'Good';
-  if (score >= 50) return 'Average';
-  return 'Below Average / Poor';
+  if (score >= 70) return 'Good';
+  if (score >= 55) return 'Average';
+  if (score >= 40) return 'Below Average';
+  return 'Poor';
 }
 
 module.exports = { computeKpaScore, computeAttributeScore, computeFinalScore, getRatingBand };
