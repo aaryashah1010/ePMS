@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Executive Dashboard - e-PMS HR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#50443f",
+                      "surface-tint": "#775846",
+                      "surface-dim": "#f4d5ad",
+                      "primary-fixed": "#ffdbc8",
+                      "on-secondary-fixed-variant": "#5f402a",
+                      "on-primary-fixed": "#2c1608",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed-dim": "#eabda0",
+                      "surface": "#fff8f3",
+                      "on-tertiary-container": "#b18b36",
+                      "tertiary": "#1e1300",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "#fff1e3",
+                      "on-error": "#ffffff",
+                      "secondary-fixed": "#ffdcc6",
+                      "outline-variant": "#d4c3bb",
+                      "ivory": "#FAF8F4",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#5d4030",
+                      "sand": "#C4A882",
+                      "secondary-container": "#ffd1b3",
+                      "inverse-on-surface": "#ffeedb",
+                      "on-primary-container": "#ad8975",
+                      "secondary": "#79573f",
+                      "coffee": "#8B6914",
+                      "mocha": "#6F4E37",
+                      "on-tertiary-fixed-variant": "#5c4300",
+                      "success-forest": "#4A7C59",
+                      "tertiary-fixed-dim": "#ecc165",
+                      "surface-container": "#ffebd3",
+                      "on-secondary-fixed": "#2d1604",
+                      "tertiary-fixed": "#ffdfa0",
+                      "espresso": "#3C2415",
+                      "surface-container-high": "#ffe4c2",
+                      "warning-goldenrod": "#B8860B",
+                      "info-steel": "#5B7B9A",
+                      "caramel": "#A0785A",
+                      "surface-container-highest": "#fddeb5",
+                      "on-background": "#281901",
+                      "on-secondary-container": "#7a5840",
+                      "tertiary-container": "#372700",
+                      "inverse-primary": "#e7bea8",
+                      "cream": "#F5F0E8",
+                      "on-surface": "#281901",
+                      "danger-burgundy": "#8B3A3A",
+                      "on-tertiary-fixed": "#261a00",
+                      "primary-fixed-dim": "#e7bea8",
+                      "inverse-surface": "#3f2d11",
+                      "background": "#fff8f3",
+                      "primary-container": "#3c2415",
+                      "white": "#FFFFFF",
+                      "surface-variant": "#fddeb5",
+                      "surface-bright": "#fff8f3",
+                      "latte": "#E8DCC8",
+                      "primary": "#241004",
+                      "outline": "#82746e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "card": "10px"
+              },
+              "spacing": {
+                      "field-spacing": "14px",
+                      "card-padding": "16px",
+                      "section-gap": "24px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "h2": [
+                              "Inter"
+                      ],
+                      "label": [
+                              "Inter"
+                      ],
+                      "meta": [
+                              "Inter"
+                      ],
+                      "body": [
+                              "Inter"
+                      ],
+                      "h1": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "h2": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "meta": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ]
+              },
+              boxShadow: {
+                  'card': '0 2px 8px rgba(60, 36, 21, 0.06)',
+                  'card-hover': '0 4px 12px rgba(60, 36, 21, 0.1)',
+                  'modal': '0 20px 40px rgba(60, 36, 21, 0.15)',
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F5F0E8; /* cream */
+        }
+        .card-shadow {
+            box-shadow: 0 2px 8px rgba(60, 36, 21, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-shadow:hover {
+            box-shadow: 0 4px 12px rgba(60, 36, 21, 0.1);
+            transform: translateY(-2px);
+        }
+        .btn-transition {
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .btn-transition:hover {
+            transform: translateY(-1px);
+        }
+        .nav-active-bar {
+            position: relative;
+        }
+        .nav-active-bar::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; /* Align with border bottom */
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: theme('colors.orange.200');
+        }
+    </style>
+</head>
+<body class="font-body text-body text-on-surface antialiased min-h-screen flex flex-col md:flex-row">
+<!-- Mobile Nav Anchor (Hidden on Web) - Bottom Nav generally excluded for this top-level dashboard unless specifically requested, using top nav for mobile as well per usual modern enterprise dash flow or hiding side nav -->
+<!-- SideNavBar (Web) -->
+<nav class="hidden md:flex flex-col fixed left-0 top-0 h-full p-4 gap-2 bg-stone-50 dark:bg-stone-950 h-screen w-64 border-r border-stone-200 dark:border-stone-800 z-20">
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-espresso flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+</div>
+<div>
+<h1 class="text-stone-900 dark:text-white font-black text-lg tracking-tight">Performance Portal</h1>
+<p class="font-meta text-meta text-stone-500">FY 2024 Cycle</p>
+</div>
+</div>
+<button class="w-full bg-espresso text-white font-label text-label py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 mb-6 btn-transition hover:bg-opacity-90">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Appraisal
+        </button>
+<div class="flex-1 flex flex-col gap-1">
+<a class="text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-[10px] flex items-center gap-3 px-3 py-2.5 cursor-pointer active:opacity-80 hover:translate-x-1 transition-all duration-200 font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">assignment_ind</span>
+                My Reviews
+            </a>
+<a class="text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-[10px] flex items-center gap-3 px-3 py-2.5 cursor-pointer active:opacity-80 hover:translate-x-1 transition-all duration-200 font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">group</span>
+                Team Appraisal
+            </a>
+<a class="bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-white rounded-[10px] flex items-center gap-3 px-3 py-2.5 cursor-pointer active:opacity-80 transition-all duration-200 font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">ads_click</span>
+                Organization Goals
+            </a>
+<a class="text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-[10px] flex items-center gap-3 px-3 py-2.5 cursor-pointer active:opacity-80 hover:translate-x-1 transition-all duration-200 font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">psychology</span>
+                Talent Pool
+            </a>
+</div>
+<div class="mt-auto border-t border-stone-200 pt-4">
+<a class="text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-900 rounded-[10px] flex items-center gap-3 px-3 py-2.5 cursor-pointer active:opacity-80 hover:translate-x-1 transition-all duration-200 font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 min-h-screen">
+<!-- TopNavBar (Web & Mobile) -->
+<header class="flex justify-between items-center w-full px-6 py-3 h-16 bg-stone-900 dark:bg-black font-['Inter'] antialiased border-b border-stone-700 shadow-sm sticky top-0 z-10 docked full-width">
+<div class="flex items-center gap-6">
+<!-- Mobile Menu Button (Hidden on Web) -->
+<button class="md:hidden text-stone-300 hover:text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="text-xl font-bold tracking-tight text-white">e-PMS HR</div>
+<!-- Nav Links (Web Only) -->
+<nav class="hidden md:flex items-center gap-1 ml-4 h-full">
+<a class="text-orange-200 border-b-2 border-orange-200 pb-1 px-3 h-16 flex items-center nav-active-bar hover:bg-stone-800 transition-colors duration-200 active:scale-95 transition-transform text-sm font-medium" href="#">Dashboard</a>
+<a class="text-stone-300 hover:text-white px-3 h-16 flex items-center hover:bg-stone-800 transition-colors duration-200 active:scale-95 transition-transform text-sm font-medium" href="#">Performance</a>
+<a class="text-stone-300 hover:text-white px-3 h-16 flex items-center hover:bg-stone-800 transition-colors duration-200 active:scale-95 transition-transform text-sm font-medium" href="#">Team</a>
+<a class="text-stone-300 hover:text-white px-3 h-16 flex items-center hover:bg-stone-800 transition-colors duration-200 active:scale-95 transition-transform text-sm font-medium" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-[18px]">search</span>
+<input class="bg-stone-800 text-stone-200 border-none rounded-full py-1.5 pl-9 pr-4 text-sm focus:ring-2 focus:ring-orange-200 focus:outline-none w-48 placeholder-stone-500 transition-all focus:w-64" placeholder="Search..." type="text"/>
+</div>
+<button class="text-stone-300 hover:text-white hover:bg-stone-800 p-1.5 rounded-full transition-colors duration-200 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-stone-300 hover:text-white hover:bg-stone-800 p-1.5 rounded-full transition-colors duration-200 active:scale-95 hidden sm:block">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-stone-600 cursor-pointer ml-2">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="professional corporate headshot of a mature executive in a dark suit against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPxtRrsGkyXqRMEkzsnd2Vj9bvtc5p5-LE3CWwpVB7fm1SdyX8Kh0SJlmUDJ-mPTWu7E1o4Rt-ERCyg_WQb8uTOb2oKYL4ZcJ04xEiqgF_CKbHYZhUv50lCz_4N7Md80NyUTv8Wb7KcrFzXJvIjXpc8uvfibDl6eHYK_uE1BhbbbIgiCr5lR42XnUusGALl5OZmgy23BIxyfd2H9JR0it3rN1TzkMz7KwG7Ns-a2x6nFos39PdO2KsQAwoETG_nmY5Gc-BD_uUI3A"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-gutter md:p-section-gap lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-section-gap flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div>
+<h2 class="font-h1 text-h1 text-espresso mb-1">Executive Dashboard</h2>
+<p class="text-mocha font-body">Overview of organizational performance and key metrics.</p>
+</div>
+<div class="flex gap-3">
+<div class="bg-white px-4 py-2 rounded-lg border border-outline-variant flex items-center gap-2 card-shadow">
+<span class="material-symbols-outlined text-mocha text-[18px]">calendar_today</span>
+<span class="font-label text-label text-espresso">Q3 2024</span>
+</div>
+<button class="bg-espresso text-white px-4 py-2 rounded-lg font-label text-label flex items-center gap-2 btn-transition hover:bg-opacity-90 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<!-- Top Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-section-gap">
+<!-- Stat Card 1 -->
+<div class="bg-white p-card-padding rounded-card card-shadow border-l-4 border-coffee relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px] text-espresso">groups</span>
+</div>
+<h3 class="font-label text-label text-mocha mb-2 uppercase tracking-wide">Total Employees</h3>
+<div class="flex items-end gap-3 mb-1">
+<span class="font-h1 text-[36px] font-extrabold text-espresso leading-none">2,845</span>
+<span class="flex items-center text-success-forest font-label text-label mb-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +4.2%
+                        </span>
+</div>
+<p class="font-meta text-meta text-surface-tint mt-2">vs last quarter</p>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-white p-card-padding rounded-card card-shadow border-l-4 border-caramel relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px] text-espresso">assignment_turned_in</span>
+</div>
+<h3 class="font-label text-label text-mocha mb-2 uppercase tracking-wide">Appraisals Completed</h3>
+<div class="flex items-end gap-3 mb-1">
+<span class="font-h1 text-[36px] font-extrabold text-espresso leading-none">84%</span>
+<span class="flex items-center text-success-forest font-label text-label mb-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +12%
+                        </span>
+</div>
+<div class="w-full bg-ivory h-2 rounded-full mt-3 overflow-hidden">
+<div class="bg-caramel h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-white p-card-padding rounded-card card-shadow border-l-4 border-espresso relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px] text-espresso">hotel_class</span>
+</div>
+<h3 class="font-label text-label text-mocha mb-2 uppercase tracking-wide">Avg Org Rating</h3>
+<div class="flex items-end gap-3 mb-1">
+<span class="font-h1 text-[36px] font-extrabold text-espresso leading-none">4.2</span>
+<span class="text-surface-tint font-label text-label mb-1">/ 5.0</span>
+<span class="flex items-center text-warning-goldenrod font-label text-label mb-1 ml-auto">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+                            0.0
+                        </span>
+</div>
+<p class="font-meta text-meta text-surface-tint mt-2">Consistent with H1</p>
+</div>
+<!-- Stat Card 4 -->
+<div class="bg-white p-card-padding rounded-card card-shadow border-l-4 border-danger-burgundy relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px] text-espresso">warning</span>
+</div>
+<h3 class="font-label text-label text-mocha mb-2 uppercase tracking-wide">Needs Attention</h3>
+<div class="flex items-end gap-3 mb-1">
+<span class="font-h1 text-[36px] font-extrabold text-espresso leading-none">124</span>
+<span class="flex items-center text-danger-burgundy font-label text-label mb-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +8
+                        </span>
+</div>
+<p class="font-meta text-meta text-surface-tint mt-2">Score &lt; 2.5</p>
+</div>
+</div>
+<!-- Main Layout Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-section-gap">
+<!-- Left Column (Wider) -->
+<div class="lg:col-span-2 flex flex-col gap-gutter">
+<!-- Performance Distribution Chart Area -->
+<div class="bg-white p-card-padding rounded-card card-shadow flex flex-col h-[400px]">
+<div class="flex justify-between items-center mb-6 border-b border-sand pb-4">
+<div>
+<h3 class="font-h2 text-h2 text-espresso">Performance Distribution</h3>
+<p class="font-meta text-meta text-mocha mt-1">Overall bell curve vs target distribution</p>
+</div>
+<button class="text-surface-tint hover:text-espresso transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<!-- Simulated Chart Area using CSS styling -->
+<div class="flex-1 flex items-end justify-between px-4 pb-2 relative gap-2 mt-4">
+<!-- Background Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pb-8 z-0">
+<div class="w-full border-t border-dashed border-outline-variant opacity-50 h-0"></div>
+<div class="w-full border-t border-dashed border-outline-variant opacity-50 h-0"></div>
+<div class="w-full border-t border-dashed border-outline-variant opacity-50 h-0"></div>
+<div class="w-full border-t border-dashed border-outline-variant opacity-50 h-0"></div>
+<div class="w-full border-t border-solid border-sand opacity-50 h-0"></div>
+</div>
+<!-- Bars -->
+<div class="w-full flex justify-around items-end h-[240px] z-10">
+<div class="flex flex-col items-center gap-2 group w-1/5">
+<div class="w-16 bg-danger-burgundy rounded-t-sm opacity-80 group-hover:opacity-100 transition-opacity relative" style="height: 5%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-espresso text-white font-meta text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">5%</div>
+</div>
+<span class="font-label text-label text-mocha">Poor</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-1/5">
+<div class="w-16 bg-caramel rounded-t-sm opacity-80 group-hover:opacity-100 transition-opacity relative" style="height: 15%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-espresso text-white font-meta text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">15%</div>
+</div>
+<span class="font-label text-label text-mocha">Fair</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-1/5">
+<div class="w-16 bg-espresso rounded-t-sm opacity-90 group-hover:opacity-100 transition-opacity relative shadow-md" style="height: 55%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-espresso text-white font-meta text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">55%</div>
+</div>
+<span class="font-label text-label text-mocha">Good</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-1/5">
+<div class="w-16 bg-coffee rounded-t-sm opacity-80 group-hover:opacity-100 transition-opacity relative" style="height: 20%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-espresso text-white font-meta text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">20%</div>
+</div>
+<span class="font-label text-label text-mocha">Excellent</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-1/5">
+<div class="w-16 bg-success-forest rounded-t-sm opacity-80 group-hover:opacity-100 transition-opacity relative" style="height: 5%;">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-espresso text-white font-meta text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">5%</div>
+</div>
+<span class="font-label text-label text-mocha">Outstanding</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Department Performance Table -->
+<div class="bg-white p-card-padding rounded-card card-shadow overflow-hidden">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-h2 text-h2 text-espresso">Department Overview</h3>
+<button class="text-surface-tint font-label text-label hover:text-espresso flex items-center gap-1">
+                                View Full Report <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-sand text-mocha font-label text-label">
+<th class="py-3 px-4 font-semibold">Department</th>
+<th class="py-3 px-4 font-semibold text-right">Headcount</th>
+<th class="py-3 px-4 font-semibold text-center">Avg Score</th>
+<th class="py-3 px-4 font-semibold text-center">Completion</th>
+<th class="py-3 px-4 font-semibold text-right">Trend</th>
+</tr>
+</thead>
+<tbody class="font-body text-body text-espresso">
+<tr class="border-b border-ivory hover:bg-ivory transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-coffee"></div> Engineering
+                                        </td>
+<td class="py-3 px-4 text-right">842</td>
+<td class="py-3 px-4 text-center">
+<span class="bg-success-forest bg-opacity-10 text-success-forest px-2 py-1 rounded-full text-sm font-semibold">4.4</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2 justify-center">
+<span class="text-sm">92%</span>
+<div class="w-16 bg-outline-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-success-forest h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right text-success-forest">
+<span class="material-symbols-outlined text-[20px] align-middle">trending_up</span>
+</td>
+</tr>
+<tr class="border-b border-ivory hover:bg-ivory transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-caramel"></div> Sales
+                                        </td>
+<td class="py-3 px-4 text-right">615</td>
+<td class="py-3 px-4 text-center">
+<span class="bg-warning-goldenrod bg-opacity-10 text-warning-goldenrod px-2 py-1 rounded-full text-sm font-semibold">4.1</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2 justify-center">
+<span class="text-sm">78%</span>
+<div class="w-16 bg-outline-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-warning-goldenrod h-full rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right text-warning-goldenrod">
+<span class="material-symbols-outlined text-[20px] align-middle">trending_flat</span>
+</td>
+</tr>
+<tr class="border-b border-ivory hover:bg-ivory transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-info-steel"></div> Marketing
+                                        </td>
+<td class="py-3 px-4 text-right">320</td>
+<td class="py-3 px-4 text-center">
+<span class="bg-coffee bg-opacity-10 text-coffee px-2 py-1 rounded-full text-sm font-semibold">4.3</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2 justify-center">
+<span class="text-sm">88%</span>
+<div class="w-16 bg-outline-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-info-steel h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right text-success-forest">
+<span class="material-symbols-outlined text-[20px] align-middle">trending_up</span>
+</td>
+</tr>
+<tr class="hover:bg-ivory transition-colors">
+<td class="py-3 px-4 font-medium flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-danger-burgundy"></div> Operations
+                                        </td>
+<td class="py-3 px-4 text-right">450</td>
+<td class="py-3 px-4 text-center">
+<span class="bg-danger-burgundy bg-opacity-10 text-danger-burgundy px-2 py-1 rounded-full text-sm font-semibold">3.8</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2 justify-center">
+<span class="text-sm">65%</span>
+<div class="w-16 bg-outline-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-danger-burgundy h-full rounded-full" style="width: 65%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right text-danger-burgundy">
+<span class="material-symbols-outlined text-[20px] align-middle">trending_down</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column (Narrower) -->
+<div class="flex flex-col gap-gutter">
+<!-- Top Performers List -->
+<div class="bg-white p-card-padding rounded-card card-shadow h-full flex flex-col">
+<div class="flex justify-between items-center mb-6 border-b border-sand pb-4">
+<div>
+<h3 class="font-h2 text-h2 text-espresso">Top Talent</h3>
+<p class="font-meta text-meta text-mocha mt-1">Outstanding ratings this cycle</p>
+</div>
+<span class="material-symbols-outlined text-coffee text-[28px]">workspace_premium</span>
+</div>
+<div class="flex flex-col gap-4 flex-1">
+<!-- Performer 1 -->
+<div class="flex items-center gap-3 p-3 rounded-lg border border-ivory hover:border-sand transition-colors cursor-pointer bg-ivory bg-opacity-50">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+<img alt="Sarah Jenkins" class="w-full h-full object-cover" data-alt="professional headshot of a smiling young woman with dark hair in a modern office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6tbUciaNn2yIOF8uhstfBaLWNOR0XzmR5FlQF1e8i4e1ftnbZBgU9HT67mkS4W8BoxUfAA-kvGeUvvgy08jmF_S94rMRidp9CqACLQRBQEXWmiK86FEqop4ZHpc48fe2Rc2CoJVOB0nT_Nm9BIwUzDENwa0Rof084pyXK0OE90kskoU3kkysCqFYkSWwlxwjlVeaWJAhJVqaIasuo0eWyYfuAdlHkAYRNCg6THZak5INSUh8ECSFItuc0s_H_GDG89fEJh9vwW8E"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label text-label text-espresso truncate">Sarah Jenkins</h4>
+<p class="font-meta text-meta text-mocha truncate">VP, Product Design</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label text-label text-coffee">5.0</span>
+<span class="text-[10px] uppercase tracking-wider text-success-forest font-bold">Outstanding</span>
+</div>
+</div>
+<!-- Performer 2 -->
+<div class="flex items-center gap-3 p-3 rounded-lg border border-ivory hover:border-sand transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+<img alt="Michael Chen" class="w-full h-full object-cover" data-alt="professional corporate headshot of a middle-aged man with glasses wearing a light blue shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5Ij4kVkA09F5JVB23I0RTBSQWznXUGCBwikIy8nr0JOrJI2WknaeSA0J14NM5T_X2NsVJQtEOB3EPhSr-QiR-wwei2IAXjep-tyZ0sdHW9URfRLtG-IjiNekUCzQCWIrUIy8Zns2CCChHWZM3J1uVHRAko-6XI6KPrkkv0VFEaVDCi-wGZ_4d9FdACdcO9t71ojp4ORydfeyAhxYTyAC_YeHh6Ky4X4CklfKGzxkUolnXjyek2f5_ht15hLx06Ge-Bq_OpL9thRc"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label text-label text-espresso truncate">Michael Chen</h4>
+<p class="font-meta text-meta text-mocha truncate">Lead Engineer</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label text-label text-coffee">4.9</span>
+<span class="text-[10px] uppercase tracking-wider text-success-forest font-bold">Outstanding</span>
+</div>
+</div>
+<!-- Performer 3 -->
+<div class="flex items-center gap-3 p-3 rounded-lg border border-ivory hover:border-sand transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+<img alt="Priya Sharma" class="w-full h-full object-cover" data-alt="professional headshot of a young woman with dark curly hair smiling against a soft warm background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdM4v_PcWtrKhufGYSabUmqKtMbpB4Vl8K8R6R7MIc6IV39qb2Zl2Rp8RpzVzdzHQu2U-UZQG1wzEH2OVYT3sqnBIJxadVGracOmL9Mi-Ihtem3SG-3zgGWYxLTGCMVzR3s5wuWvm2eFQseyzz7DJU19p7R9_LYuvglv1qaGJT6whUZIICC6hnh-z0HRJFhS-HV_rPH2vH8UB7aI5o4lE6tZkPu8Sc1FuDD9caHq4bf0BZ_DShzowaiiiWAfFKlMREBJdbvv7ypyw"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label text-label text-espresso truncate">Priya Sharma</h4>
+<p class="font-meta text-meta text-mocha truncate">Marketing Director</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label text-label text-coffee">4.9</span>
+<span class="text-[10px] uppercase tracking-wider text-success-forest font-bold">Outstanding</span>
+</div>
+</div>
+<!-- Performer 4 -->
+<div class="flex items-center gap-3 p-3 rounded-lg border border-ivory hover:border-sand transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0 bg-surface-variant flex items-center justify-center text-espresso font-bold text-lg">
+                                    DT
+                                </div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label text-label text-espresso truncate">David Thompson</h4>
+<p class="font-meta text-meta text-mocha truncate">Sales Manager</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label text-label text-coffee">4.8</span>
+<span class="text-[10px] uppercase tracking-wider text-success-forest font-bold">Outstanding</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 py-2 text-center font-label text-label text-mocha hover:text-espresso border border-outline-variant rounded-lg transition-colors bg-ivory bg-opacity-50 hover:bg-opacity-100">
+                            View All Top Performers
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

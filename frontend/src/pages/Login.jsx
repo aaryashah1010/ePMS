@@ -35,62 +35,97 @@ export default function Login() {
 
   return (
     <div style={pageStyle}>
-      <div style={cardStyle}>
-        <div style={headerStyle}>
-          <div style={logoStyle}>e-PMS</div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1e293b', margin: '12px 0 4px' }}>Welcome Back</h1>
-          <p style={{ color: '#64748b', fontSize: 14 }}>Electronic Performance Management System</p>
+      {/* Split panel layout inspired by Stitch login */}
+      <div style={splitContainerStyle}>
+        {/* Left branding panel */}
+        <div style={leftPanelStyle}>
+          <div style={leftOverlayStyle} />
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#fff' }}>donut_small</span>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>e-PMS</span>
+            </div>
+            <h1 style={{ fontSize: 32, fontWeight: 800, color: '#fff', lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: 12 }}>
+              Performance Management
+            </h1>
+            <p style={{ fontSize: 16, color: '#E8DCC8', lineHeight: 1.6, maxWidth: 340 }}>
+              Empowering teams with clear goals, structured feedback, and actionable insights to drive organizational success.
+            </p>
+          </div>
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ fontSize: 12, color: '#E8DCC8' }}>
+              <span style={{ fontWeight: 600, color: '#fff' }}>Trusted by</span><br />
+              industry leaders
+            </div>
+          </div>
         </div>
 
-        <Alert type="error" message={error} />
-
-        <form onSubmit={handleSubmit}>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Email Address</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="you@epms.com"
-              required
-              style={inputStyle}
-            />
+        {/* Right form panel */}
+        <div style={rightPanelStyle}>
+          <div style={{ marginBottom: 24 }}>
+            {/* Mobile-only branding */}
+            <div style={mobileBrandStyle}>
+              <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#3C2415' }}>donut_small</span>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#3C2415' }}>e-PMS</span>
+            </div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: '#3C2415', marginBottom: 8, letterSpacing: '-0.01em' }}>Welcome back</h2>
+            <p style={{ color: '#6F4E37', fontSize: 16 }}>Please enter your credentials to access your portal.</p>
           </div>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Password</label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
-              required
-              style={inputStyle}
-            />
-          </div>
-          <button type="submit" disabled={loading} style={btnStyle}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
 
-        <div style={hintsStyle}>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 8, fontWeight: 600 }}>Demo Accounts:</p>
-          {[
-            ['CEO (MD)', 'ceo@epms.com', 'ceo@123'],
-            ['HR Admin', 'hr@epms.com', 'hr@123'],
-            ['Alice (Employee)', 'alice@epms.com', 'alice@123'],
-            ['Bob (Reporting Officer)', 'bob@epms.com', 'bob@123'],
-            ['Carol (Reviewing Officer)', 'carol@epms.com', 'carol@123'],
-            ['Dave (Accepting Officer)', 'dave@epms.com', 'dave@123'],
-          ].map(([role, email, pass]) => (
-            <button
-              key={email}
-              type="button"
-              style={quickBtnStyle}
-              onClick={() => setForm({ email, password: pass })}
-            >
-              <strong>{role}</strong> · {email}
+          <Alert type="error" message={error} />
+
+          <form onSubmit={handleSubmit}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Email Address</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="name@company.com"
+                required
+                style={inputStyle}
+              />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Password</label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="••••••••"
+                required
+                style={inputStyle}
+              />
+            </div>
+            <button type="submit" disabled={loading} style={btnStyle}>
+              {loading ? 'Signing in...' : 'Log In'}
+              {!loading && <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_forward</span>}
             </button>
-          ))}
+          </form>
+
+          <div style={hintsStyle}>
+            <p style={{ fontSize: 12, color: '#6F4E37', marginBottom: 10, fontWeight: 600 }}>Quick-fill Demo Accounts:</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {[
+                ['CEO (MD)', 'ceo@epms.com', 'ceo@123', 'admin_panel_settings'],
+                ['HR Admin', 'hr@epms.com', 'hr@123', 'psychology'],
+                ['Alice', 'alice@epms.com', 'alice@123', 'person'],
+                ['Bob', 'bob@epms.com', 'bob@123', 'assignment_ind'],
+                ['Carol', 'carol@epms.com', 'carol@123', 'rate_review'],
+                ['Dave', 'dave@epms.com', 'dave@123', 'verified'],
+              ].map(([role, email, pass, icon]) => (
+                <button
+                  key={email}
+                  type="button"
+                  style={quickBtnStyle}
+                  onClick={() => setForm({ email, password: pass })}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{icon}</span>
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -99,35 +134,52 @@ export default function Login() {
 
 const pageStyle = {
   minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
+  background: '#F5F0E8', padding: 16,
 };
-const cardStyle = {
-  background: '#fff', borderRadius: 16, padding: '40px 36px',
-  width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+const splitContainerStyle = {
+  width: '100%', maxWidth: 1000, display: 'flex',
+  background: '#FFFFFF', borderRadius: 14,
+  boxShadow: '0 20px 40px rgba(60,36,21,0.06)',
+  overflow: 'hidden',
 };
-const headerStyle = { textAlign: 'center', marginBottom: 28 };
-const logoStyle = {
-  display: 'inline-block', background: 'linear-gradient(135deg, #1e3a5f, #2563eb)',
-  color: '#fff', fontSize: 28, fontWeight: 900, padding: '8px 20px',
-  borderRadius: 10, letterSpacing: 2,
+const leftPanelStyle = {
+  width: '50%', background: '#3C2415', position: 'relative',
+  padding: 48, display: 'flex', flexDirection: 'column',
+  justifyContent: 'space-between', minHeight: 520,
 };
-const fieldStyle = { marginBottom: 16 };
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 };
+const leftOverlayStyle = {
+  position: 'absolute', inset: 0,
+  background: 'linear-gradient(to top, #3C2415 0%, transparent 100%)',
+  opacity: 0.8, zIndex: 1,
+};
+const mobileBrandStyle = {
+  display: 'none', /* hidden on desktop, shown via media query if needed */
+  alignItems: 'center', gap: 8, marginBottom: 20,
+};
+const rightPanelStyle = {
+  width: '50%', display: 'flex', flexDirection: 'column',
+  justifyContent: 'center', padding: '40px 48px',
+};
+const fieldStyle = { marginBottom: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
 const inputStyle = {
-  width: '100%', padding: '10px 14px', border: '1.5px solid #d1d5db',
-  borderRadius: 8, fontSize: 14, outline: 'none', transition: 'border 0.2s',
+  width: '100%', padding: '12px 16px', border: '1.5px solid #D4C3BB',
+  borderRadius: 10, fontSize: 14, outline: 'none', transition: 'border-color 0.2s',
+  background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif",
 };
 const btnStyle = {
-  width: '100%', padding: '12px', background: '#2563eb', color: '#fff',
-  border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 700,
-  cursor: 'pointer', marginTop: 4, transition: 'background 0.2s',
+  width: '100%', padding: '12px', background: '#3C2415', color: '#fff',
+  border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600,
+  cursor: 'pointer', marginTop: 8, transition: 'all 0.2s',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+  fontFamily: "'Inter', sans-serif", letterSpacing: '0.01em',
 };
 const hintsStyle = {
-  marginTop: 24, padding: '16px', background: '#f8fafc',
-  borderRadius: 8, border: '1px solid #e2e8f0',
+  marginTop: 24, paddingTop: 20, borderTop: '1px solid #E8DCC8',
 };
 const quickBtnStyle = {
-  display: 'block', width: '100%', textAlign: 'left', background: 'none',
-  border: 'none', padding: '6px 0', fontSize: 12, color: '#2563eb',
-  cursor: 'pointer', borderBottom: '1px solid #e2e8f0',
+  display: 'inline-flex', alignItems: 'center', gap: 6,
+  background: '#FAF8F4', border: '1px solid #D4C3BB', padding: '6px 12px',
+  borderRadius: 20, fontSize: 12, color: '#6F4E37', fontWeight: 500,
+  cursor: 'pointer', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
 };

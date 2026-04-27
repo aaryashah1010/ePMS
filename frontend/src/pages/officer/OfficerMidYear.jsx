@@ -63,7 +63,7 @@ export default function OfficerMidYear() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Reviews ({contextualTarget})</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>Mid-Year Reviews ({contextualTarget})</h1>
       <div style={{ marginBottom: 20 }}>
         <CycleSelector
           value={cycleId}
@@ -77,32 +77,32 @@ export default function OfficerMidYear() {
           <Alert type={msg.type || 'info'} message={msg.text} />
 
           {isPhaseLocked && (
-            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+            <div style={{ marginBottom: 16, background: '#FDF8EE', border: '1px solid #D4C090', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B8860B' }}>
               🔒 Cycle is now in <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Mid-Year Review is <strong>read-only</strong>.
             </div>
           )}
 
           {midReviews.length === 0 ? (
-            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No mid-year reviews submitted from {contextualTarget.toLowerCase()}.</p></Card>
+            <Card><p style={{ color: '#A0785A', textAlign: 'center', padding: 30 }}>No mid-year reviews submitted from {contextualTarget.toLowerCase()}.</p></Card>
           ) : (
             midReviews.map((r) => (
               <Card key={r.id} title={`${r.user?.name} — Mid-Year`} style={{ marginBottom: 16 }}>
                 <Badge label={r.status} />
-                <p style={{ marginTop: 12, fontSize: 14, color: '#1e293b' }}>{r.progress}</p>
-                {r.selfRating && <p style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>Self Rating: {r.selfRating}</p>}
+                <p style={{ marginTop: 12, fontSize: 14, color: '#3C2415' }}>{r.progress}</p>
+                {r.selfRating && <p style={{ fontSize: 13, color: '#6F4E37', marginTop: 6 }}>Self Rating: {r.selfRating}</p>}
                 {r.reportingRemarks && (
-                  <div style={{ marginTop: 12, background: '#f0fdf4', padding: 12, borderRadius: 8 }}>
+                  <div style={{ marginTop: 12, background: '#FAF8F4', padding: 12, borderRadius: 8, border: '1px solid #E8DCC8' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <strong style={{ fontSize: 13 }}>Reporting Officer Remarks:</strong>
-                      {r.managerRating && <strong style={{ fontSize: 13, color: '#166534' }}>Rating: {r.managerRating}</strong>}
+                      <strong style={{ fontSize: 13, color: '#3C2415' }}>Reporting Officer Remarks:</strong>
+                      {r.managerRating && <strong style={{ fontSize: 13, color: '#4A7C59' }}>Rating: {r.managerRating}</strong>}
                     </div>
-                    <p style={{ fontSize: 13, marginTop: 4 }}>{r.reportingRemarks}</p>
+                    <p style={{ fontSize: 13, marginTop: 4, color: '#3C2415' }}>{r.reportingRemarks}</p>
                   </div>
                 )}
                 {r.status === 'SUBMITTED' && roleType === 'reporting' && !isPhaseLocked && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Reporter Rating (1-5)</label>
+                      <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4, color: '#6F4E37' }}>Reporter Rating (1-5)</label>
                       <input
                         type="number" min="1" max="5" step="0.1"
                         value={ratingMap[r.userId] || ''}
@@ -113,14 +113,14 @@ export default function OfficerMidYear() {
                           setRatingMap((prev) => ({ ...prev, [r.userId]: val }));
                         }}
                         placeholder="1-5"
-                        style={{ width: 80, padding: '6px 10px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, fontWeight: 700 }}
+                        style={{ width: 80, padding: '8px 10px', border: '1.5px solid #C4A882', borderRadius: 8, fontSize: 13, fontWeight: 700, background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                       />
                     </div>
                     <textarea
                       value={remarkMap[r.userId] || ''}
                       onChange={(e) => setRemarkMap((prev) => ({ ...prev, [r.userId]: e.target.value }))}
                       placeholder="Enter your remarks..."
-                      style={{ width: '100%', padding: 10, border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, height: 80, resize: 'vertical' }}
+                      style={{ width: '100%', padding: '12px', border: '1.5px solid #C4A882', borderRadius: 10, fontSize: 13, height: 80, resize: 'vertical', background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                     />
                     <button
                       onClick={() => handleAddRemark(r.userId)}
@@ -141,6 +141,6 @@ export default function OfficerMidYear() {
 }
 
 const remarkBtnStyle = {
-  marginTop: 8, padding: '8px 18px', background: '#2563eb', color: '#fff',
-  border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+  marginTop: 8, padding: '10px 20px', background: '#3C2415', color: '#fff',
+  border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif"
 };

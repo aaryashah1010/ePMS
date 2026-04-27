@@ -70,7 +70,6 @@ export default function Reports() {
       const url = window.URL.createObjectURL(new Blob([r.data]));
       const link = document.createElement('a');
       link.href = url;
-      // We could use the user's name from individualReport, but a generic or ID is fine too
       link.setAttribute('download', `appraisal_report_${selectedUserId}.pdf`);
       document.body.appendChild(link);
       link.click();
@@ -81,12 +80,12 @@ export default function Reports() {
   };
 
   const BAND_COLORS = {
-    Poor: '#dc2626', 'Below Average': '#d97706', Average: '#0369a1', Good: '#16a34a', Outstanding: '#7c3aed',
+    Poor: '#8B3A3A', 'Below Average': '#B8860B', Average: '#6F4E37', Good: '#4A7C59', Outstanding: '#3C2415',
   };
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Reports & Analytics</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>Reports & Analytics</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} />
@@ -120,14 +119,14 @@ export default function Reports() {
                   <div style={{ display: 'flex', gap: 20, marginBottom: 12, flexWrap: 'wrap' }}>
                     <span style={statChip}>{dept.totalEmployees} Employees</span>
                     <span style={statChip}>{dept.finalized} Finalized</span>
-                    <span style={{ ...statChip, background: '#dcfce7', color: '#166534' }}>
+                    <span style={{ ...statChip, background: '#FDF8EE', color: '#8B6914' }}>
                       Avg Score: {dept.avgFinalScore != null ? `${dept.avgFinalScore} / 5` : 'N/A'}
                     </span>
                   </div>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={tableStyle}>
                       <thead>
-                        <tr style={{ background: '#f8fafc' }}>
+                        <tr style={{ background: '#FAF8F4' }}>
                           {['Employee', 'Code', 'Status', 'Final Score', 'Rating Band'].map((h) => (
                             <th key={h} style={thStyle}>{h}</th>
                           ))}
@@ -135,11 +134,11 @@ export default function Reports() {
                       </thead>
                       <tbody>
                         {dept.employees.map((e) => (
-                          <tr key={e.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={tdStyle}>{e.name}</td>
+                          <tr key={e.id} style={{ borderBottom: '1px solid #F5F0E8' }}>
+                            <td style={tdStyle}><strong style={{ color: '#3C2415' }}>{e.name}</strong></td>
                             <td style={tdStyle}>{e.employeeCode || '—'}</td>
                             <td style={tdStyle}><Badge label={e.status} /></td>
-                            <td style={tdStyle}><strong>{e.finalScore != null ? `${e.finalScore} / 5` : '—'}</strong></td>
+                            <td style={tdStyle}><strong style={{ color: '#3C2415' }}>{e.finalScore != null ? `${e.finalScore} / 5` : '—'}</strong></td>
                             <td style={tdStyle}>
                               {e.ratingBand ? <Badge label={e.ratingBand} /> : '—'}
                             </td>
@@ -157,25 +156,25 @@ export default function Reports() {
           {/* Distribution */}
           {activeTab === 'distribution' && distribution && (
             <Card title="Rating Band Distribution">
-              <div style={{ fontSize: 14, color: '#64748b', marginBottom: 20 }}>
-                Total finalized appraisals: <strong>{distribution.total}</strong>
+              <div style={{ fontSize: 14, color: '#6F4E37', marginBottom: 20 }}>
+                Total finalized appraisals: <strong style={{ color: '#3C2415' }}>{distribution.total}</strong>
               </div>
               {Object.entries(distribution.distribution || {}).map(([band, count]) => (
                 <div key={band} style={{ marginBottom: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                       <Badge label={band} />
-                      <span style={{ fontSize: 13, color: '#64748b' }}>{count} employees</span>
+                      <span style={{ fontSize: 13, color: '#6F4E37' }}>{count} employees</span>
                     </div>
                     <strong style={{ color: BAND_COLORS[band], fontSize: 16 }}>
                       {distribution.percentages[band]}%
                     </strong>
                   </div>
-                  <div style={{ height: 12, background: '#f1f5f9', borderRadius: 6, overflow: 'hidden' }}>
+                  <div style={{ height: 12, background: '#F5F0E8', borderRadius: 6, overflow: 'hidden' }}>
                     <div style={{
                       height: '100%',
                       width: `${distribution.percentages[band]}%`,
-                      background: BAND_COLORS[band] || '#2563eb',
+                      background: BAND_COLORS[band] || '#3C2415',
                       borderRadius: 6,
                       transition: 'width 0.5s',
                     }} />
@@ -188,15 +187,15 @@ export default function Reports() {
           {/* Progress */}
           {activeTab === 'progress' && progress && (
             <Card title="Appraisal Cycle Progress">
-              <div style={{ fontSize: 14, marginBottom: 20 }}>Total: <strong>{progress.total}</strong></div>
+              <div style={{ fontSize: 14, marginBottom: 20, color: '#6F4E37' }}>Total: <strong style={{ color: '#3C2415' }}>{progress.total}</strong></div>
               {Object.entries(progress.progress || {}).map(([status, count]) => (
-                <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F5F0E8' }}>
                   <Badge label={status} />
                   <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                    <div style={{ width: 200, height: 8, background: '#e2e8f0', borderRadius: 4 }}>
-                      <div style={{ height: '100%', width: `${progress.total ? (count / progress.total) * 100 : 0}%`, background: '#2563eb', borderRadius: 4 }} />
+                    <div style={{ width: 200, height: 8, background: '#E8DCC8', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${progress.total ? (count / progress.total) * 100 : 0}%`, background: '#3C2415', borderRadius: 4 }} />
                     </div>
-                    <strong>{count}</strong>
+                    <strong style={{ color: '#3C2415' }}>{count}</strong>
                   </div>
                 </div>
               ))}
@@ -239,9 +238,9 @@ export default function Reports() {
                         ['Department', individualReport.user?.department || '—'],
                         ['Employee Code', individualReport.user?.employeeCode || '—'],
                       ].map(([l, v]) => (
-                        <div key={l} style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: 8 }}>
-                          <div style={{ fontSize: 12, color: '#64748b' }}>{l}</div>
-                          <div style={{ fontSize: 14, fontWeight: 600, marginTop: 4 }}>{v}</div>
+                        <div key={l} style={{ background: '#FAF8F4', padding: '12px 14px', borderRadius: 8, border: '1px solid #E8DCC8' }}>
+                          <div style={{ fontSize: 12, color: '#6F4E37' }}>{l}</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, marginTop: 4, color: '#3C2415' }}>{v}</div>
                         </div>
                       ))}
                     </div>
@@ -264,9 +263,9 @@ export default function Reports() {
                             ['Values (20%)', individualReport.appraisal.valuesScore, '/ 5'],
                             ['Competencies (20%)', individualReport.appraisal.competenciesScore, '/ 5'],
                           ].map(([l, v, suffix]) => (
-                            <div key={l} style={{ background: '#f8fafc', padding: 14, borderRadius: 8, textAlign: 'center' }}>
-                              <div style={{ fontSize: 12, color: '#64748b' }}>{l}</div>
-                              <div style={{ fontSize: 24, fontWeight: 800, color: '#2563eb' }}>{v ?? '—'}<span style={{ fontSize: 12, fontWeight: 500, color: '#94a3b8' }}> {v != null ? suffix : ''}</span></div>
+                            <div key={l} style={{ background: '#FAF8F4', padding: 16, borderRadius: 10, textAlign: 'center', border: '1px solid #E8DCC8' }}>
+                              <div style={{ fontSize: 12, color: '#6F4E37', fontWeight: 600 }}>{l}</div>
+                              <div style={{ fontSize: 28, fontWeight: 900, color: '#3C2415', marginTop: 4 }}>{v ?? '—'}<span style={{ fontSize: 13, fontWeight: 500, color: '#A0785A' }}> {v != null ? suffix : ''}</span></div>
                             </div>
                           ))}
                         </div>
@@ -274,11 +273,11 @@ export default function Reports() {
                       })()}
                       {individualReport.kpas?.length > 0 && (
                         <div>
-                          <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>KPA Goals</h4>
+                          <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: '#3C2415', marginTop: 24 }}>KPA Goals</h4>
                           {individualReport.kpas.map((k) => (
-                            <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 13 }}>
-                              <span>{k.title}</span>
-                              <span style={{ color: '#64748b' }}>{k.weightage}% · <Badge label={k.status} /></span>
+                            <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F5F0E8', fontSize: 13 }}>
+                              <span style={{ fontWeight: 600, color: '#3C2415' }}>{k.title}</span>
+                              <span style={{ color: '#6F4E37', display: 'flex', gap: 10, alignItems: 'center' }}>Weight: {k.weightage}% <Badge label={k.status} /></span>
                             </div>
                           ))}
                         </div>
@@ -295,14 +294,14 @@ export default function Reports() {
   );
 }
 
-const tabsStyle = { display: 'flex', gap: 0, marginBottom: 20, border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden', width: 'fit-content' };
-const tabStyle = { padding: '10px 20px', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 500, background: '#fff', color: '#64748b' };
-const activeTabStyle = { background: '#2563eb', color: '#fff', fontWeight: 700 };
-const emptyStyle = { textAlign: 'center', color: '#94a3b8', padding: 40 };
+const tabsStyle = { display: 'flex', gap: 0, marginBottom: 20, border: '1px solid #E8DCC8', borderRadius: 10, overflow: 'hidden', width: 'fit-content' };
+const tabStyle = { padding: '10px 20px', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, background: '#fff', color: '#A0785A', fontFamily: "'Inter', sans-serif" };
+const activeTabStyle = { background: '#3C2415', color: '#fff', fontWeight: 700 };
+const emptyStyle = { textAlign: 'center', color: '#A0785A', padding: 40 };
 const tableStyle = { width: '100%', borderCollapse: 'collapse' };
-const thStyle = { padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b', borderBottom: '2px solid #e2e8f0' };
-const tdStyle = { padding: '10px 12px', fontSize: 13 };
-const statChip = { background: '#dbeafe', color: '#1d4ed8', padding: '4px 12px', borderRadius: 16, fontSize: 13, fontWeight: 600 };
-const inputStyle = { padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
-const fetchBtnStyle = { padding: '8px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' };
-const exportBtnStyle = { padding: '8px 16px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 };
+const thStyle = { padding: '12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#3C2415', borderBottom: '2px solid #E8DCC8' };
+const tdStyle = { padding: '12px', fontSize: 13, color: '#6F4E37' };
+const statChip = { background: '#E8DCC8', color: '#3C2415', padding: '6px 14px', borderRadius: 16, fontSize: 13, fontWeight: 700 };
+const inputStyle = { padding: '10px 12px', border: '1.5px solid #C4A882', borderRadius: 8, fontSize: 14, color: '#3C2415', fontFamily: "'Inter', sans-serif" };
+const fetchBtnStyle = { padding: '10px 20px', background: '#3C2415', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" };
+const exportBtnStyle = { padding: '8px 16px', background: '#4A7C59', color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif" };

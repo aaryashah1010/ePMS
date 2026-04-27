@@ -61,7 +61,7 @@ export default function AttributeManagement() {
   return (
     <Layout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800 }}>Attribute Master</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#3C2415', letterSpacing: '-0.01em' }}>Attribute Master</h1>
         <Button onClick={() => { setShowForm(!showForm); setEditId(null); setForm(EMPTY_FORM); }}>
           {showForm ? 'Cancel' : '+ New Attribute'}
         </Button>
@@ -98,17 +98,17 @@ export default function AttributeManagement() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {[{ label: 'Values', list: values, color: '#7c3aed' }, { label: 'Competencies', list: competencies, color: '#0369a1' }].map(({ label, list, color }) => (
+        {[{ label: 'Values', list: values, color: '#8B6914' }, { label: 'Competencies', list: competencies, color: '#4A7C59' }].map(({ label, list, color }) => (
           <Card key={label} title={`${label} (${list.length})`}>
             {list.length === 0 ? (
-              <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No {label.toLowerCase()} added yet.</p>
+              <p style={{ color: '#A0785A', textAlign: 'center', padding: 20 }}>No {label.toLowerCase()} added yet.</p>
             ) : (
               list.map((a) => (
-                <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #F5F0E8' }}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: a.isActive ? '#1e293b' : '#94a3b8' }}>{a.name}</div>
-                    <div style={{ fontSize: 12, color: '#94a3b8' }}>{a.description}</div>
-                    {!a.isActive && <span style={{ fontSize: 11, color: '#dc2626' }}>Inactive</span>}
+                    <div style={{ fontWeight: 600, fontSize: 14, color: a.isActive ? '#3C2415' : '#A0785A' }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: '#6F4E37', marginTop: 2 }}>{a.description}</div>
+                    {!a.isActive && <span style={{ fontSize: 11, color: '#8B3A3A', fontWeight: 600 }}>Inactive</span>}
                   </div>
                   {a.isActive && (
                     <div style={{ display: 'flex', gap: 6 }}>
@@ -132,5 +132,5 @@ export default function AttributeManagement() {
   );
 }
 
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 };
-const inputStyle = { width: '100%', padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
+const inputStyle = { width: '100%', padding: '10px 12px', border: '1.5px solid #C4A882', borderRadius: 8, fontSize: 14, color: '#3C2415', fontFamily: "'Inter', sans-serif" };

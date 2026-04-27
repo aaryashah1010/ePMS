@@ -67,16 +67,16 @@ export default function OfficerDashboard() {
   return (
     <Layout>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1e293b' }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#3C2415', letterSpacing: '-0.01em' }}>
           {title} Dashboard
         </h1>
-        <p style={{ color: '#64748b', marginTop: 4 }}>
+        <p style={{ color: '#6F4E37', marginTop: 4 }}>
           {user?.name} · {user?.department}
         </p>
       </div>
 
       {cycle && (
-        <Card style={{ marginBottom: 24, background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', color: '#fff' }}>
+        <Card style={{ marginBottom: 24, background: 'linear-gradient(135deg, #3C2415, #6F4E37)', color: '#fff', border: 'none' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Active Cycle</div>
@@ -98,22 +98,22 @@ export default function OfficerDashboard() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <StatCard label={`Total ${contextualTarget}`} value={employees.length} color="#2563eb" />
-        <StatCard label="Total Appraisals" value={appraisals.length} color="#7c3aed" />
-        <StatCard label="Pending Your Action" value={pendingAction} color={pendingAction > 0 ? '#d97706' : '#16a34a'} />
-        <StatCard label="Finalized" value={appraisals.filter((a) => a.status === 'FINALIZED').length} color="#16a34a" />
+        <StatCard label={`Total ${contextualTarget}`} value={employees.length} color="#A0785A" />
+        <StatCard label="Total Appraisals" value={appraisals.length} color="#8B6914" />
+        <StatCard label="Pending Your Action" value={pendingAction} color={pendingAction > 0 ? '#B8860B' : '#4A7C59'} />
+        <StatCard label="Finalized" value={appraisals.filter((a) => a.status === 'FINALIZED').length} color="#4A7C59" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
         <Card title={`${contextualTarget} Appraisal Status`} actions={<Link to={`/officer/${roleType}/ratings`} style={linkStyle}>View All →</Link>}>
           {appraisals.length === 0 ? (
-            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No appraisals found.</p>
+            <p style={{ color: '#A0785A', textAlign: 'center', padding: 20 }}>No appraisals found.</p>
           ) : (
             appraisals.slice(0, 6).map((a) => (
-              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #F5F0E8' }}>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{a.user?.name}</div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>{a.user?.department}</div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{a.user?.name}</div>
+                  <div style={{ fontSize: 12, color: '#6F4E37' }}>{a.user?.department}</div>
                 </div>
                 <Badge label={a.status} />
               </div>
@@ -123,14 +123,14 @@ export default function OfficerDashboard() {
 
         <Card title={`My ${contextualTarget}`} actions={<Link to={`/officer/${roleType}/goals`} style={linkStyle}>View Goals →</Link>}>
           {employees.length === 0 ? (
-            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No {contextualTarget.toLowerCase()} assigned.</p>
+            <p style={{ color: '#A0785A', textAlign: 'center', padding: 20 }}>No {contextualTarget.toLowerCase()} assigned.</p>
           ) : (
             employees.map((r) => (
-              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid #F5F0E8' }}>
                 <div style={avatarStyle}>{r.name?.charAt(0)}</div>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>{r.department} · {r.employeeCode}</div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{r.name}</div>
+                  <div style={{ fontSize: 12, color: '#6F4E37' }}>{r.department} · {r.employeeCode}</div>
                 </div>
               </div>
             ))
@@ -141,9 +141,9 @@ export default function OfficerDashboard() {
   );
 }
 
-const linkStyle = { fontSize: 13, color: '#2563eb', textDecoration: 'none', fontWeight: 600 };
+const linkStyle = { fontSize: 13, color: '#A0785A', textDecoration: 'none', fontWeight: 600 };
 const avatarStyle = {
-  width: 36, height: 36, background: '#dbeafe', color: '#1d4ed8',
+  width: 36, height: 36, background: '#E8DCC8', color: '#3C2415',
   borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
   fontWeight: 700, fontSize: 15, flexShrink: 0,
 };

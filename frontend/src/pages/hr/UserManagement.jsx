@@ -69,7 +69,7 @@ export default function UserManagement() {
   return (
     <Layout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800 }}>User Management</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#3C2415', letterSpacing: '-0.01em' }}>User Management</h1>
         <Button onClick={() => { setShowForm(!showForm); setEditId(null); setForm(EMPTY_FORM); }}>
           {showForm && !editId ? 'Cancel' : '+ New User'}
         </Button>
@@ -133,7 +133,7 @@ export default function UserManagement() {
                 </>
               )}
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <Button type="submit" loading={loading}>{editId ? 'Update User' : 'Create User'}</Button>
               <Button variant="secondary" onClick={() => { setShowForm(false); setEditId(null); setForm(EMPTY_FORM); }}>Cancel</Button>
             </div>
@@ -160,13 +160,13 @@ export default function UserManagement() {
             <tbody>
               {filtered.map((u) => (
                 <tr key={u.id} style={trStyle}>
-                  <td style={tdStyle}><strong>{u.name}</strong></td>
+                  <td style={tdStyle}><strong style={{ color: '#3C2415' }}>{u.name}</strong></td>
                   <td style={tdStyle}>{u.email}</td>
                   <td style={tdStyle}>{u.employeeCode || '—'}</td>
                   <td style={tdStyle}><Badge label={u.role} /></td>
                   <td style={tdStyle}>{u.department || '—'}</td>
                   <td style={tdStyle}>
-                    <span style={{ color: u.isActive ? '#16a34a' : '#dc2626', fontWeight: 600, fontSize: 13 }}>
+                    <span style={{ color: u.isActive ? '#4A7C59' : '#8B3A3A', fontWeight: 600, fontSize: 13 }}>
                       {u.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -190,10 +190,10 @@ export default function UserManagement() {
 
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 };
 const fieldStyle = {};
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 };
-const inputStyle = { width: '100%', padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
+const inputStyle = { width: '100%', padding: '10px 12px', border: '1.5px solid #C4A882', borderRadius: 8, fontSize: 14, color: '#3C2415', fontFamily: "'Inter', sans-serif" };
 const tableStyle = { width: '100%', borderCollapse: 'collapse' };
-const thRowStyle = { background: '#f8fafc' };
-const thStyle = { padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b', borderBottom: '2px solid #e2e8f0' };
-const trStyle = { borderBottom: '1px solid #f1f5f9' };
-const tdStyle = { padding: '12px', fontSize: 13 };
+const thRowStyle = { background: '#FAF8F4' };
+const thStyle = { padding: '12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#3C2415', borderBottom: '2px solid #E8DCC8' };
+const trStyle = { borderBottom: '1px solid #F5F0E8' };
+const tdStyle = { padding: '12px', fontSize: 13, color: '#6F4E37' };

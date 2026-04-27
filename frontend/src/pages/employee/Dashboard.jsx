@@ -32,43 +32,39 @@ export default function LandingDashboard() {
     }
   };
 
+  const roleCards = [
+    { key: 'employee', icon: 'person', label: 'Employee Space', desc: 'Manage your self-appraisal, view goals, and track your individual development plan.', gradient: 'linear-gradient(135deg, #FAF8F4, #E8DCC8)', iconColor: '#3C2415', onClick: () => navigate('/employee/summary') },
+    { key: 'reporting', icon: 'assignment_ind', label: 'Reporting Officer', desc: 'Evaluate direct reports, provide continuous feedback, and draft initial ratings.', gradient: 'linear-gradient(135deg, #FFF8F3, #FFEBD3)', iconColor: '#8B6914', onClick: () => handleOfficerNavigation('reporting') },
+    { key: 'reviewing', icon: 'rate_review', label: 'Reviewing Officer', desc: 'Normalize ratings across teams, resolve disputes, and ensure fair evaluations.', gradient: 'linear-gradient(135deg, #FFFFFF, #F5EDE0)', iconColor: '#A0785A', onClick: () => handleOfficerNavigation('reviewing') },
+    { key: 'accepting', icon: 'verified', label: 'Accepting Officer', desc: 'Finalize appraisals, approve organizational bell-curve alignment, and close the cycle.', gradient: 'linear-gradient(135deg, #FCF9F5, #F0E6D8)', iconColor: '#4A7C59', onClick: () => handleOfficerNavigation('accepting') },
+  ];
+
   return (
     <Layout>
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#1e293b' }}>
-          Welcome back, {user?.name}
+        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#3C2415', letterSpacing: '-0.02em' }}>
+          Role Navigation Spaces
         </h1>
-        <p style={{ color: '#64748b', fontSize: 16, marginTop: 8 }}>
-          {user?.department || 'No Department'} · Employee Code: {user?.employeeCode || 'N/A'}
+        <p style={{ color: '#6F4E37', fontSize: 16, marginTop: 8, maxWidth: 600 }}>
+          Select your active role context to proceed with the performance appraisal cycle. Your available actions will adapt based on the selected workspace.
         </p>
       </div>
 
-      {errorMsg && <Alert type="error" message={errorMsg} style={{ marginBottom: 24 }} />}
+      {errorMsg && <Alert type="error" message={errorMsg} />}
 
       <div style={gridStyle}>
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }} onClick={() => navigate('/employee/summary')}>
-          <div style={iconStyle}>👤</div>
-          <h2 style={cardTitleStyle}>Employee Space</h2>
-          <p style={cardDescStyle}>Manage your own goals, mid-year review, and annual appraisal.</p>
-        </div>
-
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #10b981, #047857)' }} onClick={() => handleOfficerNavigation('reporting')}>
-          <div style={iconStyle}>👥</div>
-          <h2 style={cardTitleStyle}>Reporting Officer Space</h2>
-          <p style={cardDescStyle}>Review goals and provide initial ratings for your direct reportees.</p>
-        </div>
-
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #8b5cf6, #5b21b6)' }} onClick={() => handleOfficerNavigation('reviewing')}>
-          <div style={iconStyle}>🔍</div>
-          <h2 style={cardTitleStyle}>Reviewing Officer Space</h2>
-          <p style={cardDescStyle}>Review and adjust ratings for employees under your review cycle.</p>
-        </div>
-
-        <div style={{ ...cardWrapperStyle, background: 'linear-gradient(135deg, #f59e0b, #b45309)' }} onClick={() => handleOfficerNavigation('accepting')}>
-          <div style={iconStyle}>✅</div>
-          <h2 style={cardTitleStyle}>Accepting Officer Space</h2>
-          <p style={cardDescStyle}>Provide final approval for appraisals within your hierarchy.</p>
-        </div>
+        {roleCards.map((card) => (
+          <div key={card.key} style={{ ...cardWrapperStyle, background: card.gradient }} onClick={card.onClick}>
+            <div style={glowStyle} />
+            <div style={{ ...roleIconStyle, color: card.iconColor }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 24 }}>{card.icon}</span>
+            </div>
+            <div style={{ zIndex: 1, marginTop: 20 }}>
+              <h2 style={cardTitleStyle}>{card.label}</h2>
+              <p style={cardDescStyle}>{card.desc}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </Layout>
   );
@@ -76,38 +72,44 @@ export default function LandingDashboard() {
 
 const gridStyle = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
   gap: 24,
 };
 
 const cardWrapperStyle = {
-  borderRadius: 16,
-  padding: 32,
-  color: '#ffffff',
+  borderRadius: 14,
+  padding: 24,
   cursor: 'pointer',
-  transition: 'transform 0.2s, box-shadow 0.2s',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  boxShadow: '0 1px 3px rgba(60,36,21,0.06)',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
-  border: 'none',
+  minHeight: 220,
+  position: 'relative',
+  overflow: 'hidden',
+  border: '1px solid rgba(212,195,187,0.4)',
 };
 
-const iconStyle = {
-  fontSize: 48,
-  marginBottom: 16,
+const glowStyle = {
+  position: 'absolute', right: -24, top: -24,
+  width: 128, height: 128, borderRadius: '50%',
+  background: 'rgba(196,168,130,0.15)',
+  filter: 'blur(40px)',
+};
+
+const roleIconStyle = {
+  width: 48, height: 48, borderRadius: '50%',
+  background: '#FFFFFF', boxShadow: '0 1px 3px rgba(60,36,21,0.08)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  zIndex: 1, border: '1px solid rgba(212,195,187,0.2)',
 };
 
 const cardTitleStyle = {
-  fontSize: 20,
-  fontWeight: 700,
-  margin: '0 0 12px 0',
+  fontSize: 20, fontWeight: 700, margin: '0 0 8px 0',
+  color: '#3C2415', letterSpacing: '-0.01em',
 };
 
 const cardDescStyle = {
-  fontSize: 14,
-  opacity: 0.9,
-  lineHeight: 1.5,
-  margin: 0,
+  fontSize: 14, color: 'rgba(111,78,55,0.8)',
+  lineHeight: 1.5, margin: 0,
 };

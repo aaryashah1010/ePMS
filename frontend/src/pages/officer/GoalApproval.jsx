@@ -71,7 +71,7 @@ export default function GoalApproval() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>{contextualTarget} Goal Approvals</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>{contextualTarget} Goal Approvals</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector
@@ -86,41 +86,41 @@ export default function GoalApproval() {
           <Alert type={msg.type || 'info'} message={msg.text} />
 
           {isPhaseLocked && (
-            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+            <div style={{ marginBottom: 16, background: '#FDF8EE', border: '1px solid #D4C090', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B8860B' }}>
               🔒 Cycle is now in <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Goal review is <strong>read-only</strong>.
             </div>
           )}
 
           {Object.values(byEmployee).length === 0 ? (
-            <Card><p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs from {contextualTarget.toLowerCase()}.</p></Card>
+            <Card><p style={{ color: '#A0785A', textAlign: 'center', padding: 30 }}>No KPAs from {contextualTarget.toLowerCase()}.</p></Card>
           ) : (
             Object.values(byEmployee).map(({ user: emp, kpas: empKpas }) => {
               const hasSubmitted = empKpas.some(k => k.status === 'SUBMITTED');
               
               return (
                 <Card key={emp.id} title={`${emp.name} (${emp.employeeCode || emp.email})`} style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>{emp.department}</div>
+                  <div style={{ fontSize: 12, color: '#6F4E37', marginBottom: 12 }}>{emp.department}</div>
                   {empKpas.map((k) => (
-                    <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F5F0E8' }}>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 14 }}>{k.title}</div>
-                        <div style={{ fontSize: 13, color: '#64748b' }}>{k.description}</div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{k.title}</div>
+                        <div style={{ fontSize: 13, color: '#6F4E37', marginTop: 4 }}>{k.description}</div>
                         <span style={weightBadge}>{k.weightage}%</span>
                       </div>
                       <Badge label={k.status} />
                     </div>
                   ))}
-                  <div style={{ marginTop: 8, fontSize: 13, color: '#64748b' }}>
+                  <div style={{ marginTop: 12, fontSize: 13, color: '#6F4E37', fontWeight: 500 }}>
                     Total weight: {empKpas.reduce((s, k) => s + k.weightage, 0)}%
                   </div>
                   
                   {hasSubmitted && roleType === 'reporting' && !isPhaseLocked && (
-                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
+                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #E8DCC8' }}>
                       <textarea
                         value={remarkMap[emp.id] || ''}
                         onChange={(e) => setRemarkMap((prev) => ({ ...prev, [emp.id]: e.target.value }))}
                         placeholder="Enter remarks (required for rejection)..."
-                        style={{ width: '100%', padding: 10, border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, height: 80, resize: 'vertical', marginBottom: 10 }}
+                        style={{ width: '100%', padding: '12px', border: '1.5px solid #C4A882', borderRadius: 10, fontSize: 13, height: 80, resize: 'vertical', marginBottom: 10, background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                       />
                       <div style={{ display: 'flex', gap: 10 }}>
                         <Button 
@@ -151,6 +151,6 @@ export default function GoalApproval() {
 }
 
 const weightBadge = {
-  display: 'inline-block', background: '#dbeafe', color: '#1d4ed8',
-  padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700, marginTop: 4,
+  display: 'inline-block', background: '#E8DCC8', color: '#3C2415',
+  padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700, marginTop: 6,
 };

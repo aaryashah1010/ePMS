@@ -1,10 +1,10 @@
 import React from 'react';
 
 const TYPES = {
-  error:   { bg: '#fef2f2', border: '#fca5a5', color: '#991b1b', icon: '✕' },
-  success: { bg: '#f0fdf4', border: '#86efac', color: '#166534', icon: '✓' },
-  info:    { bg: '#eff6ff', border: '#93c5fd', color: '#1e40af', icon: 'ℹ' },
-  warning: { bg: '#fffbeb', border: '#fcd34d', color: '#92400e', icon: '⚠' },
+  error:   { bg: '#FDF0F0', border: '#D4A0A0', color: '#8B3A3A', icon: '✕' },
+  success: { bg: '#EFF5F0', border: '#A0C4A8', color: '#4A7C59', icon: '✓' },
+  info:    { bg: '#EEF2F5', border: '#A8BFD0', color: '#5B7B9A', icon: 'ℹ' },
+  warning: { bg: '#FDF8EE', border: '#D4C090', color: '#B8860B', icon: '⚠' },
 };
 
 export default function Alert({ type = 'info', message }) {
@@ -13,7 +13,7 @@ export default function Alert({ type = 'info', message }) {
   return (
     <div style={{
       background: s.bg, border: `1px solid ${s.border}`, color: s.color,
-      borderRadius: 8, padding: '12px 16px', marginBottom: 16,
+      borderRadius: 10, padding: '12px 16px', marginBottom: 16,
       display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14,
     }}>
       <span style={{ fontWeight: 700, flexShrink: 0 }}>{s.icon}</span>

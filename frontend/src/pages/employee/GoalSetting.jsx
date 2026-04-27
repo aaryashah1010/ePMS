@@ -133,7 +133,7 @@ export default function GoalSetting() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Goal Setting (KPAs)</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>Goal Setting (KPAs)</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector
@@ -147,18 +147,18 @@ export default function GoalSetting() {
         <>
           <Alert type={msg.type || 'info'} message={msg.text} />
           {rejectionRemarks && (
-            <div style={{ marginBottom: 20, background: '#fef2f2', border: '1px solid #f87171', borderRadius: 8, padding: 16 }}>
-              <h4 style={{ margin: 0, color: '#b91c1c', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ marginBottom: 20, background: '#FDF0F0', border: '1px solid #D4A0A0', borderRadius: 10, padding: 16 }}>
+              <h4 style={{ margin: 0, color: '#8B3A3A', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 20 }}>⚠️</span> Goals Rejected
               </h4>
-              <p style={{ marginTop: 8, color: '#991b1b', fontSize: 14 }}>
+              <p style={{ marginTop: 8, color: '#8B3A3A', fontSize: 14 }}>
                 <strong>Reporting Officer Remarks:</strong> {rejectionRemarks}
               </p>
             </div>
           )}
 
           {isPhaseLocked && (
-            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+            <div style={{ marginBottom: 16, background: '#FDF8EE', border: '1px solid #D4C090', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B8860B' }}>
               🔒 This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Goal Setting is now <strong>read-only</strong>.
             </div>
           )}
@@ -179,7 +179,7 @@ export default function GoalSetting() {
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Weightage (%) *</label>
                     <input style={inputStyle} type="number" min="1" max="100" step="0.01" value={form.weightage} onChange={(e) => setForm({ ...form, weightage: e.target.value })} required placeholder="e.g., 30" />
-                    <small style={{ color: '#64748b', fontSize: 12 }}>Total allocated: {totalWeight}% · Remaining: {(100 - totalWeight).toFixed(2)}%</small>
+                    <small style={{ color: '#A0785A', fontSize: 12 }}>Total allocated: {totalWeight}% · Remaining: {(100 - totalWeight).toFixed(2)}%</small>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <Button type="submit" loading={loading}>{editId ? 'Update KPA' : 'Add KPA'}</Button>
@@ -212,22 +212,22 @@ export default function GoalSetting() {
               }
             >
               {kpas.length === 0 ? (
-                <p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No KPAs yet. Add your first goal.</p>
+                <p style={{ color: '#A0785A', textAlign: 'center', padding: 30 }}>No KPAs yet. Add your first goal.</p>
               ) : (
                 <>
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ height: 8, background: '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${Math.min(totalWeight, 100)}%`, background: Math.abs(totalWeight - 100) < 0.01 ? '#16a34a' : '#2563eb', borderRadius: 4 }} />
+                    <div style={{ height: 8, background: '#E8DCC8', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${Math.min(totalWeight, 100)}%`, background: Math.abs(totalWeight - 100) < 0.01 ? '#4A7C59' : '#A0785A', borderRadius: 4, transition: 'width 0.3s ease' }} />
                     </div>
-                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: '#6F4E37', marginTop: 4 }}>
                       {totalWeight}% allocated {Math.abs(totalWeight - 100) < 0.01 ? '✓ Ready to submit' : `· ${(100 - totalWeight).toFixed(2)}% remaining`}
                     </div>
                   </div>
                   {kpas.map((k) => (
                     <div key={k.id} style={kpaRowStyle}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: 14 }}>{k.title}</div>
-                        {k.description && <div style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>{k.description}</div>}
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{k.title}</div>
+                        {k.description && <div style={{ fontSize: 13, color: '#6F4E37', marginTop: 2 }}>{k.description}</div>}
                         <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center' }}>
                           <span style={weightBadge}>{k.weightage}%</span>
                           <Badge label={k.status} />
@@ -256,13 +256,13 @@ export default function GoalSetting() {
 }
 
 const fieldStyle = { marginBottom: 14 };
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 };
-const inputStyle = { width: '100%', padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 4 };
+const inputStyle = { width: '100%', padding: '10px 14px', border: '1.5px solid #C4A882', borderRadius: 10, fontSize: 14, background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif" };
 const kpaRowStyle = {
   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-  padding: '12px 0', borderBottom: '1px solid #f1f5f9', gap: 12,
+  padding: '12px 0', borderBottom: '1px solid #F5F0E8', gap: 12,
 };
 const weightBadge = {
-  background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px',
+  background: '#E8DCC8', color: '#3C2415', padding: '2px 8px',
   borderRadius: 12, fontSize: 12, fontWeight: 700,
 };

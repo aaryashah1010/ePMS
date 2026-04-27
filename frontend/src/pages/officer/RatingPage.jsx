@@ -6,8 +6,14 @@ import Button from '../../components/Button';
 import Badge from '../../components/Badge';
 import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
+import ConfirmModal from '../../components/ConfirmModal';
 import { appraisalAPI, kpaAPI, attributeAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+
+const RATING_BAND_COLOR = {
+  Poor: '#8B3A3A', 'Below Average': '#A0785A',
+  Average: '#6F4E37', Good: '#4A7C59', Outstanding: '#3C2415',
+};
 
 const ACTION_MAP = {
   reporting: { requiredStatus: 'SUBMITTED', actionLabel: 'Mark Reporting Done', handler: 'reportingDone' },
@@ -31,6 +37,7 @@ export default function RatingPage() {
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm', variant: 'primary' });
 
   const action = ACTION_MAP[roleType];
   
@@ -160,26 +167,35 @@ export default function RatingPage() {
     } finally { setSaving(false); }
   };
 
-  const handleActionClick = async () => {
-    if (!window.confirm(`${action?.actionLabel}?`)) return;
-    setActing(true);
-    try {
-      // Auto-save ratings silently before submitting the action
-      const kpaPayload = Object.entries(kpaRatings).map(([kpaGoalId, v]) => ({ kpaGoalId, rating: parseFloat(v.rating), remarks: v.remarks }));
-      const attrPayload = Object.entries(attrRatings).map(([attributeId, v]) => ({ attributeId, rating: parseFloat(v.rating), remarks: v.remarks }));
-      
-      await Promise.all([
-        kpaPayload.length ? appraisalAPI.saveKpaRatings(selected.id, kpaPayload) : Promise.resolve(),
-        attrPayload.length ? appraisalAPI.saveAttributeRatings(selected.id, attrPayload) : Promise.resolve(),
-      ]);
+  const handleActionClick = () => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Confirm Action',
+      message: `Are you sure you want to ${action?.actionLabel}?`,
+      confirmText: action?.actionLabel,
+      variant: 'success',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setActing(true);
+        try {
+          // Auto-save ratings silently before submitting the action
+          const kpaPayload = Object.entries(kpaRatings).map(([kpaGoalId, v]) => ({ kpaGoalId, rating: parseFloat(v.rating), remarks: v.remarks }));
+          const attrPayload = Object.entries(attrRatings).map(([attributeId, v]) => ({ attributeId, rating: parseFloat(v.rating), remarks: v.remarks }));
+          
+          await Promise.all([
+            kpaPayload.length ? appraisalAPI.saveKpaRatings(selected.id, kpaPayload) : Promise.resolve(),
+            attrPayload.length ? appraisalAPI.saveAttributeRatings(selected.id, attrPayload) : Promise.resolve(),
+          ]);
 
-      await appraisalAPI[action.handler](cycleId, selected.user.id, remarks);
-      setMsg({ type: 'success', text: `${action.actionLabel} done.` });
-      setSelected(null);
-      loadAppraisals(cycleId);
-    } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Action failed' });
-    } finally { setActing(false); }
+          await appraisalAPI[action.handler](cycleId, selected.user.id, remarks);
+          setMsg({ type: 'success', text: `${action.actionLabel} done.` });
+          setSelected(null);
+          loadAppraisals(cycleId);
+        } catch (err) {
+          setMsg({ type: 'error', text: err.response?.data?.message || 'Action failed' });
+        } finally { setActing(false); }
+      }
+    });
   };
 
   const valuesAttrs = attributes.filter((a) => a.type === 'VALUES');
@@ -197,9 +213,9 @@ export default function RatingPage() {
     const reportingId = selected.user?.reportingOfficerId;
     const reviewingId = selected.user?.reviewingOfficerId;
     const RATER_META = [
-      { id: empId,      label: 'Employee Self-Rating',  bg: '#f0f9ff', border: '#bae6fd' },
-      { id: reportingId, label: 'Reporting Officer',     bg: '#f0fdf4', border: '#86efac' },
-      { id: reviewingId, label: 'Reviewing Officer',     bg: '#fefce8', border: '#fde68a' },
+      { id: empId,      label: 'Employee Self-Rating',  bg: '#FAF8F4', border: '#E8DCC8' },
+      { id: reportingId, label: 'Reporting Officer',     bg: '#FDF8EE', border: '#D4C090' },
+      { id: reviewingId, label: 'Reviewing Officer',     bg: '#FDF0F0', border: '#D4A0A0' },
     ];
     if (roleType === 'reporting') return RATER_META.slice(0, 1); // self only
     if (roleType === 'reviewing') return RATER_META.slice(0, 2); // self + reporting
@@ -209,7 +225,7 @@ export default function RatingPage() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Rate {contextualTarget}</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>Rate {contextualTarget}</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} minPhase="ANNUAL_APPRAISAL" />
@@ -222,15 +238,15 @@ export default function RatingPage() {
       {cycleId && !selected && (
         <Card title={`${contextualTarget} Appraisals (${appraisals.length})`}>
           {appraisals.length === 0 ? (
-            <p style={{ color: '#94a3b8', textAlign: 'center', padding: 30 }}>No appraisals available for {contextualTarget.toLowerCase()}.</p>
+            <p style={{ color: '#A0785A', textAlign: 'center', padding: 30 }}>No appraisals available for {contextualTarget.toLowerCase()}.</p>
           ) : (
             appraisals.map((a) => {
               return (
-              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #F5F0E8' }}>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{a.user?.name}</div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>{a.user?.department} · {a.user?.employeeCode}</div>
-                  {a.finalScore && <div style={{ fontSize: 13, marginTop: 4 }}>Score: <strong>{a.finalScore} / 5</strong> · <Badge label={a.ratingBand} /></div>}
+                  <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{a.user?.name}</div>
+                  <div style={{ fontSize: 12, color: '#6F4E37' }}>{a.user?.department} · {a.user?.employeeCode}</div>
+                  {a.finalScore && <div style={{ fontSize: 13, marginTop: 4 }}>Score: <strong style={{ color: '#3C2415' }}>{a.finalScore} / 5</strong> · <Badge label={a.ratingBand} /></div>}
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Badge label={a.status} />
@@ -255,12 +271,12 @@ export default function RatingPage() {
           <Card title={`Appraisal: ${selected.user?.name}`} style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
               <Badge label={selected.status} />
-              <span style={{ fontSize: 13, color: '#64748b' }}>{selected.user?.department}</span>
+              <span style={{ fontSize: 13, color: '#6F4E37' }}>{selected.user?.department}</span>
             </div>
             {selected.achievements && (
-              <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, marginBottom: 12 }}>
-                <strong style={{ fontSize: 13 }}>Employee Achievements:</strong>
-                <p style={{ fontSize: 13, marginTop: 6, color: '#374151' }}>{selected.achievements}</p>
+              <div style={{ background: '#FAF8F4', padding: 14, borderRadius: 8, marginBottom: 12, border: '1px solid #E8DCC8' }}>
+                <strong style={{ fontSize: 13, color: '#3C2415' }}>Employee Achievements:</strong>
+                <p style={{ fontSize: 13, marginTop: 6, color: '#6F4E37', lineHeight: 1.5 }}>{selected.achievements}</p>
               </div>
             )}
           </Card>
@@ -271,8 +287,8 @@ export default function RatingPage() {
               {kpas.map((k) => {
                 const lowerRaters = getLowerRaters();
                 return (
-                  <div key={k.id} style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9' }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{k.title}</div>
+                  <div key={k.id} style={{ padding: '16px 0', borderBottom: '1px solid #F5F0E8' }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, color: '#3C2415' }}>{k.title}</div>
                     <span style={weightBadge}>{k.weightage}%</span>
 
                     {/* Previous officer ratings hierarchy */}
@@ -282,11 +298,11 @@ export default function RatingPage() {
                       return (
                         <div key={id} style={{ marginTop: 10, background: bg, border: `1px solid ${border}`, borderRadius: 8, padding: '8px 12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>{label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: '#1e293b' }}>{prev.rating} / {k.weightage}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#3C2415' }}>{label}</span>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: '#3C2415' }}>{prev.rating} / {k.weightage}</span>
                           </div>
                           {prev.remarks && (
-                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>"{prev.remarks}"</div>
+                           <div style={{ fontSize: 12, color: '#6F4E37', marginTop: 4 }}>"{prev.remarks}"</div>
                           )}
                         </div>
                       );
@@ -294,7 +310,7 @@ export default function RatingPage() {
 
                     {/* Current officer's input */}
                     <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {isEditable && <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Your Rating:</div>}
+                      {isEditable && <div style={{ fontSize: 11, fontWeight: 600, color: '#6F4E37' }}>Your Rating:</div>}
                       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                         <input
                           type="number" min="0" max={k.weightage} step="0.1"
@@ -313,7 +329,7 @@ export default function RatingPage() {
                           value={kpaRatings[k.id]?.remarks || ''}
                           onChange={(e) => setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], remarks: e.target.value } }))}
                           placeholder="Remarks (optional)"
-                          style={{ flex: 1, padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
+                          style={{ flex: 1, padding: '8px 12px', border: '1px solid #C4A882', borderRadius: 8, fontSize: 13, background: isEditable ? '#FAF8F4' : '#fff', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                           disabled={!isEditable}
                         />
                       </div>
@@ -330,13 +346,13 @@ export default function RatingPage() {
               {[{ label: 'Values', list: valuesAttrs }, { label: 'Competencies', list: competencyAttrs }].map(({ label, list }) => (
                 list.length > 0 && (
                   <div key={label} style={{ marginBottom: 20 }}>
-                    <h4 style={{ fontSize: 14, fontWeight: 700, color: '#1e3a5f', marginBottom: 12 }}>{label}</h4>
+                    <h4 style={{ fontSize: 14, fontWeight: 700, color: '#3C2415', marginBottom: 12 }}>{label}</h4>
                     {list.map((attr) => {
                       const lowerRaters = getLowerRaters();
                       return (
-                        <div key={attr.id} style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
-                          <div style={{ fontSize: 14, fontWeight: 500 }}>{attr.name}</div>
-                          {attr.description && <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>{attr.description}</div>}
+                        <div key={attr.id} style={{ padding: '14px 0', borderBottom: '1px solid #F5F0E8' }}>
+                          <div style={{ fontSize: 14, fontWeight: 500, color: '#3C2415' }}>{attr.name}</div>
+                          {attr.description && <div style={{ fontSize: 12, color: '#A0785A', marginBottom: 8 }}>{attr.description}</div>}
 
                           {/* Previous officer ratings hierarchy */}
                           {lowerRaters.map(({ id, label: raterLabel, bg, border }) => {
@@ -344,15 +360,15 @@ export default function RatingPage() {
                             if (!prev) return null;
                             return (
                               <div key={id} style={{ marginTop: 8, background: bg, border: `1px solid ${border}`, borderRadius: 8, padding: '6px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>{raterLabel}</span>
-                                <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>{prev.rating} / 5</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#3C2415' }}>{raterLabel}</span>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: '#3C2415' }}>{prev.rating} / 5</span>
                               </div>
                             );
                           })}
 
                           {/* Current officer's input */}
-                          <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
-                            {isEditable && <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', whiteSpace: 'nowrap' }}>Your Rating:</div>}
+                          <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+                            {isEditable && <div style={{ fontSize: 11, fontWeight: 600, color: '#6F4E37', whiteSpace: 'nowrap' }}>Your Rating:</div>}
                             <input
                               type="number" min="1" max="5" step="0.1"
                               value={attrRatings[attr.id]?.rating || ''}
@@ -371,7 +387,7 @@ export default function RatingPage() {
                               value={attrRatings[attr.id]?.remarks || ''}
                               onChange={(e) => setAttrRatings((p) => ({ ...p, [attr.id]: { ...p[attr.id], remarks: e.target.value } }))}
                               placeholder="Remarks (optional)"
-                              style={{ flex: 1, padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12 }}
+                              style={{ flex: 1, padding: '8px 12px', border: '1px solid #C4A882', borderRadius: 8, fontSize: 13, background: isEditable ? '#FAF8F4' : '#fff', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                               disabled={!isEditable}
                             />
                           </div>
@@ -387,14 +403,14 @@ export default function RatingPage() {
           <Card style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6, color: '#6F4E37' }}>
                   Remarks for {action?.actionLabel}
                 </label>
                 <textarea
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   placeholder="Your assessment remarks..."
-                  style={{ width: '100%', padding: 10, border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 13, height: 80, resize: 'vertical' }}
+                  style={{ width: '100%', padding: '12px', border: '1.5px solid #C4A882', borderRadius: 10, fontSize: 13, height: 80, resize: 'vertical', background: isEditable ? '#FAF8F4' : '#fff', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                   disabled={!isEditable}
                 />
               </div>
@@ -412,15 +428,21 @@ export default function RatingPage() {
           </Card>
         </div>
       )}
+
+      <ConfirmModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
     </Layout>
   );
 }
 
 const weightBadge = {
-  display: 'inline-block', background: '#dbeafe', color: '#1d4ed8',
+  display: 'inline-block', background: '#E8DCC8', color: '#3C2415',
   padding: '2px 8px', borderRadius: 12, fontSize: 12, fontWeight: 700,
 };
 const ratingInputStyle = {
-  width: 80, padding: '6px 10px', border: '1.5px solid #d1d5db',
+  width: 80, padding: '8px 10px', border: '1.5px solid #C4A882',
   borderRadius: 8, fontSize: 14, fontWeight: 700, textAlign: 'center',
+  background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif"
 };

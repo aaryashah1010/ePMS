@@ -78,7 +78,7 @@ export default function MidYearReview() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Mid-Year Review</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>Mid-Year Review</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector
@@ -93,7 +93,7 @@ export default function MidYearReview() {
           <Alert type={msg.type || 'info'} message={msg.text} />
 
           {isPhaseLocked && (
-            <div style={{ marginBottom: 16, background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: '#713f12' }}>
+            <div style={{ marginBottom: 16, background: '#FDF8EE', border: '1px solid #D4C090', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B8860B' }}>
               🔒 This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Mid-Year Review is now <strong>read-only</strong>.
             </div>
           )}
@@ -144,8 +144,8 @@ export default function MidYearReview() {
           </Card>
 
           {review?.reportingRemarks && (
-            <Card title="Reporting Officer's Remarks" style={{ marginTop: 20, background: '#fffbeb' }}>
-              <p style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.6 }}>{review.reportingRemarks}</p>
+            <Card title="Reporting Officer's Remarks" style={{ marginTop: 20, background: '#FAF8F4' }}>
+              <p style={{ fontSize: 14, color: '#3C2415', lineHeight: 1.6 }}>{review.reportingRemarks}</p>
             </Card>
           )}
         </>
@@ -159,5 +159,5 @@ export default function MidYearReview() {
 }
 
 const fieldStyle = { marginBottom: 16 };
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 };
-const inputStyle = { width: '100%', padding: '10px 14px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
+const inputStyle = { width: '100%', padding: '10px 14px', border: '1.5px solid #C4A882', borderRadius: 10, fontSize: 14, background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif" };

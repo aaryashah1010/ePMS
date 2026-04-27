@@ -175,18 +175,18 @@ export default function CycleDetails() {
   };
 
   if (loading) {
-    return <Layout><div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Loading...</div></Layout>;
+    return <Layout><div style={{ padding: 40, textAlign: 'center', color: '#A0785A' }}>Loading...</div></Layout>;
   }
 
   if (!cycle) {
-    return <Layout><div style={{ padding: 40, textAlign: 'center', color: '#ef4444' }}>Cycle not found.</div></Layout>;
+    return <Layout><div style={{ padding: 40, textAlign: 'center', color: '#8B3A3A' }}>Cycle not found.</div></Layout>;
   }
 
   return (
     <Layout>
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={() => navigate('/hr/cycles')} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>&larr; Back</button>
-        <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0 }}>{cycle.name} Details</h1>
+        <button onClick={() => navigate('/hr/cycles')} style={{ background: 'none', border: 'none', color: '#6F4E37', cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>&larr; Back</button>
+        <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: '#3C2415', letterSpacing: '-0.01em' }}>{cycle.name} Details</h1>
       </div>
 
       <Alert type={msg.type || 'info'} message={msg.text} />
@@ -201,7 +201,7 @@ export default function CycleDetails() {
             <Button variant="danger" onClick={handleClose}>Close Cycle</Button>
           </>
         )}
-        <Button style={{ background: '#ef4444', color: 'white', border: 'none' }} onClick={handleDelete}>Delete Cycle</Button>
+        <Button style={{ background: '#8B3A3A', color: 'white', border: 'none' }} onClick={handleDelete}>Delete Cycle</Button>
       </Card>
 
       {/* Edit Form */}
@@ -211,15 +211,15 @@ export default function CycleDetails() {
             <div style={gridStyle}>
               <div style={fieldStyle}>
                 <label style={labelStyle}>Cycle Name (Locked)</label>
-                <input style={{...inputStyle, background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed'}} value={form.name} disabled />
+                <input style={{...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed'}} value={form.name} disabled />
               </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>Year (Locked)</label>
-                <input type="number" style={{...inputStyle, background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed'}} value={form.year} disabled />
+                <input type="number" style={{...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed'}} value={form.year} disabled />
               </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>Start Date (Locked)</label>
-                <input type="date" style={{...inputStyle, background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed'}} value={form.startDate} disabled />
+                <input type="date" style={{...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed'}} value={form.startDate} disabled />
               </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>End Date *</label>
@@ -227,7 +227,7 @@ export default function CycleDetails() {
               </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>Phase (Locked)</label>
-                <select style={{...inputStyle, background: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed'}} value={form.phase} disabled>
+                <select style={{...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed'}} value={form.phase} disabled>
                   {PHASES.map((p) => <option key={p} value={p}>{p.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>
@@ -240,7 +240,7 @@ export default function CycleDetails() {
               </div>
             </div>
             
-            <h4 style={{ fontSize: 14, fontWeight: 700, margin: '16px 0 10px', color: '#1e3a5f' }}>Score Weights (%)</h4>
+            <h4 style={{ fontSize: 14, fontWeight: 700, margin: '16px 0 10px', color: '#3C2415' }}>Score Weights (%)</h4>
             <div style={gridStyle}>
               <div style={fieldStyle}>
                 <label style={labelStyle}>KPA Weight</label>
@@ -273,23 +273,23 @@ export default function CycleDetails() {
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
           <Badge label={cycle.status} />
           <Badge label={cycle.phase} />
-          <span style={{ fontSize: 14, color: '#64748b' }}>Year: {cycle.year}</span>
+          <span style={{ fontSize: 14, color: '#6F4E37' }}>Year: {cycle.year}</span>
         </div>
-        <div style={{ fontSize: 14, color: '#475569', marginBottom: 16 }}>
+        <div style={{ fontSize: 14, color: '#3C2415', marginBottom: 16 }}>
           <strong>Timeline:</strong> {new Date(cycle.startDate).toLocaleDateString()} – {new Date(cycle.endDate).toLocaleDateString()}
         </div>
-        {cycle.description && <p style={{ fontSize: 14, color: '#475569', marginBottom: 16 }}>{cycle.description}</p>}
+        {cycle.description && <p style={{ fontSize: 14, color: '#6F4E37', marginBottom: 16 }}>{cycle.description}</p>}
 
         {/* Phase Timeline Tracker */}
-        <div style={{ display: 'flex', gap: 0, marginTop: 16, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: 0, marginTop: 16, border: '1px solid #E8DCC8', borderRadius: 8, overflow: 'hidden' }}>
           {PHASES.map((p, i) => {
             const isCurrentOrPast = PHASES.indexOf(cycle.phase) >= i;
             return (
               <div key={p} style={{
-                flex: 1, padding: '8px 12px', textAlign: 'center', fontSize: 12, fontWeight: 600,
-                background: p === cycle.phase ? '#2563eb' : isCurrentOrPast ? '#dbeafe' : '#f8fafc',
-                color: p === cycle.phase ? '#fff' : isCurrentOrPast ? '#1d4ed8' : '#94a3b8',
-                borderRight: i < PHASES.length - 1 ? '1px solid #e2e8f0' : 'none',
+                flex: 1, padding: '10px 12px', textAlign: 'center', fontSize: 12, fontWeight: 600,
+                background: p === cycle.phase ? '#3C2415' : isCurrentOrPast ? '#E8DCC8' : '#FAF8F4',
+                color: p === cycle.phase ? '#fff' : isCurrentOrPast ? '#3C2415' : '#A0785A',
+                borderRight: i < PHASES.length - 1 ? '1px solid #E8DCC8' : 'none',
               }}>
                 {p.replace(/_/g, ' ')}
               </div>
@@ -303,27 +303,27 @@ export default function CycleDetails() {
         <div style={gridStyle}>
           <Card title="Goal Setting">
             {Object.entries(stats.progress?.progress?.goalProgress || {}).map(([status, count]) => (
-              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F5F0E8' }}>
                 <Badge label={status} />
-                <span style={{ fontWeight: 600 }}>{count}</span>
+                <span style={{ fontWeight: 600, color: '#3C2415' }}>{count}</span>
               </div>
             ))}
           </Card>
 
           <Card title="Mid-Year Review">
             {Object.entries(stats.progress?.progress?.midYearProgress || {}).map(([status, count]) => (
-              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F5F0E8' }}>
                 <Badge label={status} />
-                <span style={{ fontWeight: 600 }}>{count}</span>
+                <span style={{ fontWeight: 600, color: '#3C2415' }}>{count}</span>
               </div>
             ))}
           </Card>
 
           <Card title="Annual Appraisal">
             {Object.entries(stats.progress?.progress?.appraisalProgress || {}).map(([status, count]) => (
-              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={status} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F5F0E8' }}>
                 <Badge label={status} />
-                <span style={{ fontWeight: 600 }}>{count}</span>
+                <span style={{ fontWeight: 600, color: '#3C2415' }}>{count}</span>
               </div>
             ))}
           </Card>
@@ -340,5 +340,5 @@ export default function CycleDetails() {
 
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 14 };
 const fieldStyle = {};
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 };
-const inputStyle = { width: '100%', padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
+const inputStyle = { width: '100%', padding: '10px 12px', border: '1.5px solid #C4A882', borderRadius: 8, fontSize: 14, color: '#3C2415', fontFamily: "'Inter', sans-serif" };

@@ -65,8 +65,8 @@ export default function CEOUserManagement() {
     <Layout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800 }}>Manage HR Accounts</h1>
-          <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Create and manage HR personnel. All HRs automatically report to you.</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#3C2415', letterSpacing: '-0.01em' }}>Manage HR Accounts</h1>
+          <p style={{ fontSize: 13, color: '#6F4E37', marginTop: 4 }}>Create and manage HR personnel. All HRs automatically report to you.</p>
         </div>
         <Button onClick={() => { setShowForm(!showForm); setEditId(null); setForm(EMPTY_FORM); }}>
           {showForm && !editId ? 'Cancel' : '+ New HR User'}
@@ -77,7 +77,7 @@ export default function CEOUserManagement() {
 
       {showForm && (
         <Card title={editId ? 'Edit HR User' : 'Create New HR Account'} style={{ marginBottom: 20 }}>
-          <div style={{ padding: '8px 12px', background: '#eff6ff', borderRadius: 8, marginBottom: 14, fontSize: 13, color: '#1e40af' }}>
+          <div style={{ padding: '10px 14px', background: '#FAF8F4', border: '1px solid #E8DCC8', borderRadius: 8, marginBottom: 16, fontSize: 13, color: '#3C2415', fontWeight: 500 }}>
             ℹ️ HR users are automatically assigned to the Managing Director as their Reporting, Reviewing, and Accepting Officer.
           </div>
           <form onSubmit={handleSubmit}>
@@ -96,7 +96,7 @@ export default function CEOUserManagement() {
               </div>
               <div>
                 <label style={labelStyle}>Role</label>
-                <input style={{ ...inputStyle, background: '#f1f5f9', cursor: 'not-allowed' }} value="HR" readOnly />
+                <input style={{ ...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed' }} value="HR" readOnly />
               </div>
               <div>
                 <label style={labelStyle}>Department</label>
@@ -117,26 +117,26 @@ export default function CEOUserManagement() {
 
       <Card title={`HR Users (${users.length})`}>
         {users.length === 0 ? (
-          <p style={{ color: '#64748b', fontSize: 14 }}>No HR users found. Click "+ New HR User" to create one.</p>
+          <p style={{ color: '#A0785A', fontSize: 14 }}>No HR users found. Click "+ New HR User" to create one.</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={tableStyle}>
               <thead>
                 <tr style={thRowStyle}>
                   {['Name', 'Email', 'Code', 'Department', 'Status', 'Actions'].map(h => (
-                    <th key={h} style={thStyle}>{h}</th>
+                     <th key={h} style={thStyle}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {users.map((u) => (
                   <tr key={u.id} style={trStyle}>
-                    <td style={tdStyle}><strong>{u.name}</strong></td>
+                    <td style={tdStyle}><strong style={{ color: '#3C2415' }}>{u.name}</strong></td>
                     <td style={tdStyle}>{u.email}</td>
                     <td style={tdStyle}>{u.employeeCode || '—'}</td>
                     <td style={tdStyle}>{u.department || '—'}</td>
                     <td style={tdStyle}>
-                      <span style={{ color: u.isActive ? '#16a34a' : '#dc2626', fontWeight: 600, fontSize: 13 }}>
+                      <span style={{ color: u.isActive ? '#4A7C59' : '#8B3A3A', fontWeight: 600, fontSize: 13 }}>
                         {u.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -160,10 +160,10 @@ export default function CEOUserManagement() {
 }
 
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 };
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 4 };
-const inputStyle = { width: '100%', padding: '8px 12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
+const inputStyle = { width: '100%', padding: '10px 12px', border: '1.5px solid #C4A882', borderRadius: 8, fontSize: 14, color: '#3C2415', fontFamily: "'Inter', sans-serif" };
 const tableStyle = { width: '100%', borderCollapse: 'collapse' };
-const thRowStyle = { background: '#f8fafc' };
-const thStyle = { padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b', borderBottom: '2px solid #e2e8f0' };
-const trStyle = { borderBottom: '1px solid #f1f5f9' };
-const tdStyle = { padding: '12px', fontSize: 13 };
+const thRowStyle = { background: '#FAF8F4' };
+const thStyle = { padding: '12px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#3C2415', borderBottom: '2px solid #E8DCC8' };
+const trStyle = { borderBottom: '1px solid #F5F0E8' };
+const tdStyle = { padding: '12px', fontSize: 13, color: '#6F4E37' };

@@ -10,8 +10,8 @@ import { appraisalAPI, kpaAPI, attributeAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const RATING_BAND_COLOR = {
-  Poor: '#dc2626', 'Below Average': '#d97706',
-  Average: '#0369a1', Good: '#16a34a', Outstanding: '#7c3aed',
+  Poor: '#8B3A3A', 'Below Average': '#A0785A',
+  Average: '#6F4E37', Good: '#4A7C59', Outstanding: '#3C2415',
 };
 
 export default function SelfAppraisal() {
@@ -196,7 +196,7 @@ export default function SelfAppraisal() {
 
   return (
     <Layout>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Annual Self-Appraisal</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: '#3C2415', letterSpacing: '-0.01em' }}>Annual Self-Appraisal</h1>
 
       <div style={{ marginBottom: 20 }}>
         <CycleSelector value={cycleId} onChange={setCycleId} minPhase="ANNUAL_APPRAISAL" />
@@ -213,16 +213,16 @@ export default function SelfAppraisal() {
             const compOn5 = appraisal.competenciesScore;
 
             return (
-              <Card style={{ marginBottom: 20, textAlign: 'center', background: '#f0fdf4', border: '2px solid #86efac' }}>
-                <div style={{ fontSize: 13, color: '#166534', fontWeight: 600, marginBottom: 6 }}>FINAL APPRAISAL RESULT</div>
-                <div style={{ fontSize: 56, fontWeight: 900, color: RATING_BAND_COLOR[appraisal.ratingBand] || '#2563eb' }}>
-                  {appraisal.finalScore} <span style={{ fontSize: 20, fontWeight: 500, color: '#64748b' }}>/ 5</span>
+              <Card style={{ marginBottom: 20, textAlign: 'center', background: '#FDF8EE', border: '1px solid #D4C090' }}>
+                <div style={{ fontSize: 13, color: '#8B6914', fontWeight: 600, marginBottom: 6 }}>FINAL APPRAISAL RESULT</div>
+                <div style={{ fontSize: 56, fontWeight: 900, color: RATING_BAND_COLOR[appraisal.ratingBand] || '#3C2415' }}>
+                  {appraisal.finalScore} <span style={{ fontSize: 20, fontWeight: 500, color: '#6F4E37' }}>/ 5</span>
                 </div>
                 <Badge label={appraisal.ratingBand} />
 
                 {/* Phase-wise Score Breakdown */}
                 <div style={{ marginTop: 24, textAlign: 'left' }}>
-                  <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: '#1e293b', textAlign: 'center' }}>Phase-wise Rating Breakdown</h4>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: '#3C2415', textAlign: 'center' }}>Phase-wise Rating Breakdown</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                     {/* KPA Score */}
                     <div style={phaseCardStyle}>
@@ -248,8 +248,8 @@ export default function SelfAppraisal() {
                   </div>
 
                   {/* Overall computation display */}
-                  <div style={{ marginTop: 16, background: '#f8fafc', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#475569', textAlign: 'center' }}>
-                    <strong>Overall:</strong> ({kpaOn5 ?? 0} × 0.60) + ({valuesOn5 ?? 0} × 0.20) + ({compOn5 ?? 0} × 0.20) = <strong style={{ color: '#1e293b', fontSize: 15 }}>{appraisal.finalScore}</strong>
+                  <div style={{ marginTop: 16, background: '#FAF8F4', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#6F4E37', textAlign: 'center', border: '1px solid #E8DCC8' }}>
+                    <strong>Overall:</strong> ({kpaOn5 ?? 0} × 0.60) + ({valuesOn5 ?? 0} × 0.20) + ({compOn5 ?? 0} × 0.20) = <strong style={{ color: '#3C2415', fontSize: 15 }}>{appraisal.finalScore}</strong>
                   </div>
                 </div>
               </Card>
@@ -261,7 +261,7 @@ export default function SelfAppraisal() {
               <div style={{ marginBottom: 12 }}>
                 <Badge label={appraisal.status} />
                 {!isDraft && (
-                  <p style={{ fontSize: 13, color: '#64748b', marginTop: 8, fontWeight: 600 }}>
+                  <p style={{ fontSize: 13, color: '#6F4E37', marginTop: 8, fontWeight: 600 }}>
                     {getStatusLabel(appraisal.status)}
                   </p>
                 )}
@@ -271,7 +271,7 @@ export default function SelfAppraisal() {
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>Achievements & Contributions *</label>
               <textarea
-                style={{ width: '100%', padding: '12px', border: '1.5px solid #d1d5db', borderRadius: 8, fontSize: 14, height: 180, resize: 'vertical' }}
+                style={{ width: '100%', padding: '12px', border: '1.5px solid #C4A882', borderRadius: 10, fontSize: 14, height: 180, resize: 'vertical', background: !isDraft ? '#FAF8F4' : '#fff', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                 value={achievements}
                 onChange={(e) => setAchievements(e.target.value)}
                 placeholder="Describe your key achievements, contributions, and outcomes for this appraisal year..."
@@ -282,18 +282,18 @@ export default function SelfAppraisal() {
             {/* KPA Self Ratings — always shown, read-only after submission */}
             {kpas.length > 0 && (
               <div style={{ marginTop: 24, marginBottom: 16 }}>
-                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: '#3C2415' }}>
                   {isDraft ? 'Self-Rate KPAs' : 'Your KPA Self-Ratings'}
                 </h4>
                 {!isDraft && (
-                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
+                  <div style={{ fontSize: 12, color: '#8B6914', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
                 )}
                 {kpas.map((k) => (
-                  <div key={k.id} style={{ padding: '14px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <div key={k.id} style={{ padding: '14px 0', borderBottom: '1px solid #F5F0E8' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: 14 }}>{k.title}</div>
-                        <div style={{ fontSize: 12, color: '#64748b' }}>Weight: {k.weightage}%</div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{k.title}</div>
+                        <div style={{ fontSize: 12, color: '#6F4E37' }}>Weight: {k.weightage}%</div>
                       </div>
                       <input
                         type="number" min="0" max={k.weightage} step="0.1"
@@ -305,7 +305,7 @@ export default function SelfAppraisal() {
                           setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], rating: val } }));
                         }}
                         placeholder={isDraft ? `Max ${k.weightage}` : '—'}
-                        style={{ ...ratingInputStyle, opacity: isDraft ? 1 : 0.7, background: isDraft ? '#fff' : '#f8fafc' }}
+                        style={{ ...ratingInputStyle, opacity: isDraft ? 1 : 0.7, background: isDraft ? '#fff' : '#FAF8F4' }}
                         readOnly={!isDraft}
                       />
                     </div>
@@ -316,7 +316,7 @@ export default function SelfAppraisal() {
                         setKpaRatings((p) => ({ ...p, [k.id]: { ...p[k.id], remarks: e.target.value } }));
                       }}
                       placeholder={isDraft ? 'Your achievements / remarks for this KPA...' : 'No remarks entered.'}
-                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 12, resize: 'vertical', minHeight: 56, marginTop: 4, background: isDraft ? '#fff' : '#f8fafc', color: '#374151' }}
+                      style={{ width: '100%', padding: '10px', border: '1px solid #E8DCC8', borderRadius: 8, fontSize: 13, resize: 'vertical', minHeight: 56, marginTop: 4, background: isDraft ? '#fff' : '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif" }}
                       readOnly={!isDraft}
                     />
                   </div>
@@ -327,19 +327,19 @@ export default function SelfAppraisal() {
             {/* Attribute Self Ratings — always shown, read-only after submission */}
             {(valuesAttrs.length > 0 || competencyAttrs.length > 0) && (
               <div style={{ marginTop: 24, marginBottom: 20 }}>
-                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: '#3C2415' }}>
                   {isDraft ? 'Self-Rate Values & Competencies (1-5)' : 'Your Values & Competencies Self-Ratings'}
                 </h4>
                 {!isDraft && (
-                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
+                  <div style={{ fontSize: 12, color: '#8B6914', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
                 )}
                 {[{ label: 'Values', list: valuesAttrs }, { label: 'Competencies', list: competencyAttrs }].map(({ label, list }) => (
                   list.length > 0 && (
                     <div key={label} style={{ marginBottom: 16 }}>
-                      <h5 style={{ fontSize: 14, fontWeight: 600, color: '#475569', marginBottom: 8 }}>{label}</h5>
+                      <h5 style={{ fontSize: 14, fontWeight: 600, color: '#6F4E37', marginBottom: 8 }}>{label}</h5>
                       {list.map((attr) => (
-                        <div key={attr.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
-                          <div style={{ fontSize: 13, fontWeight: 500 }}>{attr.name}</div>
+                        <div key={attr.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: '#3C2415' }}>{attr.name}</div>
                           <input
                             type="number" min="1" max="5" step="0.1"
                             value={attrRatings[attr.id]?.rating || ''}
@@ -351,7 +351,7 @@ export default function SelfAppraisal() {
                               setAttrRatings((p) => ({ ...p, [attr.id]: { rating: val } }));
                             }}
                             placeholder={isDraft ? '1–5' : '—'}
-                            style={{ ...ratingInputStyle, opacity: isDraft ? 1 : 0.7, background: isDraft ? '#fff' : '#f8fafc' }}
+                            style={{ ...ratingInputStyle, opacity: isDraft ? 1 : 0.7, background: isDraft ? '#fff' : '#FAF8F4' }}
                             readOnly={!isDraft}
                           />
                         </div>
@@ -380,24 +380,24 @@ export default function SelfAppraisal() {
             
             if (acceptingKpaRatings.length === 0) return null;
             return (
-              <Card title="Final KPA Ratings — Accepting Officer" style={{ marginTop: 20, background: '#fdf4ff', border: '1.5px solid #e9d5ff' }}>
+              <Card title="Final KPA Ratings — Accepting Officer" style={{ marginTop: 20, background: '#FAF8F4', border: '1px solid #E8DCC8' }}>
                 {acceptingKpaRatings.map((r) => (
                   <div key={r.id} style={ratingRowStyle}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.kpaGoal?.title}</div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>Weight: {r.kpaGoal?.weightage}%</div>
-                      {r.remarks && <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>Remarks: {r.remarks}</div>}
+                      <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{r.kpaGoal?.title}</div>
+                      <div style={{ fontSize: 12, color: '#6F4E37' }}>Weight: {r.kpaGoal?.weightage}%</div>
+                      {r.remarks && <div style={{ fontSize: 13, color: '#3C2415', marginTop: 4 }}>Remarks: {r.remarks}</div>}
                     </div>
                     <div style={ratingBubble(r.rating / (r.kpaGoal?.weightage || 1) * 5)}>{r.rating}</div>
                   </div>
                 ))}
-                <div style={{ marginTop: 16, padding: '12px 16px', background: '#f5f3ff', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: 16, padding: '14px 16px', background: '#F5F0E8', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>KPA Total</div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>Raw: {kpaTotal} / 100 → Scaled: {kpaOn5} / 5</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#3C2415' }}>KPA Total</div>
+                    <div style={{ fontSize: 12, color: '#6F4E37' }}>Raw: {kpaTotal} / 100 → Scaled: {kpaOn5} / 5</div>
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: RATING_BAND_COLOR[getRatingLabel(kpaOn5)] || '#1e293b' }}>
-                    {kpaOn5} <span style={{ fontSize: 13, fontWeight: 500, color: '#64748b' }}>/ 5 ({getRatingLabel(kpaOn5)})</span>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: RATING_BAND_COLOR[getRatingLabel(kpaOn5)] || '#3C2415' }}>
+                    {kpaOn5} <span style={{ fontSize: 13, fontWeight: 500, color: '#A0785A' }}>/ 5 ({getRatingLabel(kpaOn5)})</span>
                   </div>
                 </div>
               </Card>
@@ -412,22 +412,22 @@ export default function SelfAppraisal() {
             
             if (valuesRatings.length === 0) return null;
             return (
-              <Card title="Final Values Ratings — Accepting Officer" style={{ marginTop: 20, background: '#fef9ef', border: '1.5px solid #fde68a' }}>
+              <Card title="Final Values Ratings — Accepting Officer" style={{ marginTop: 20, background: '#FDF8EE', border: '1px solid #D4C090' }}>
                 {valuesRatings.map((r) => (
                   <div key={r.id} style={ratingRowStyle}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.attribute?.name}</div>
-                      {r.remarks && <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>Remarks: {r.remarks}</div>}
+                      <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{r.attribute?.name}</div>
+                      {r.remarks && <div style={{ fontSize: 13, color: '#6F4E37', marginTop: 4 }}>Remarks: {r.remarks}</div>}
                     </div>
                     <div style={ratingBubble(r.rating)}>{r.rating}</div>
                   </div>
                 ))}
-                <div style={{ marginTop: 16, padding: '12px 16px', background: '#fffbeb', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: 16, padding: '14px 16px', background: '#FAF8F4', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Values Average</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#3C2415' }}>Values Average</div>
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: RATING_BAND_COLOR[getRatingLabel(valuesAvg)] || '#1e293b' }}>
-                    {valuesAvg} <span style={{ fontSize: 13, fontWeight: 500, color: '#64748b' }}>/ 5 ({getRatingLabel(valuesAvg)})</span>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: RATING_BAND_COLOR[getRatingLabel(valuesAvg)] || '#3C2415' }}>
+                    {valuesAvg} <span style={{ fontSize: 13, fontWeight: 500, color: '#A0785A' }}>/ 5 ({getRatingLabel(valuesAvg)})</span>
                   </div>
                 </div>
               </Card>
@@ -442,22 +442,22 @@ export default function SelfAppraisal() {
             
             if (compRatings.length === 0) return null;
             return (
-              <Card title="Final Competencies Ratings — Accepting Officer" style={{ marginTop: 20, background: '#f0f9ff', border: '1.5px solid #bae6fd' }}>
+              <Card title="Final Competencies Ratings — Accepting Officer" style={{ marginTop: 20, background: '#FAF8F4', border: '1px solid #E8DCC8' }}>
                 {compRatings.map((r) => (
                   <div key={r.id} style={ratingRowStyle}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.attribute?.name}</div>
-                      {r.remarks && <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>Remarks: {r.remarks}</div>}
+                      <div style={{ fontWeight: 600, fontSize: 14, color: '#3C2415' }}>{r.attribute?.name}</div>
+                      {r.remarks && <div style={{ fontSize: 13, color: '#6F4E37', marginTop: 4 }}>Remarks: {r.remarks}</div>}
                     </div>
                     <div style={ratingBubble(r.rating)}>{r.rating}</div>
                   </div>
                 ))}
-                <div style={{ marginTop: 16, padding: '12px 16px', background: '#f0f9ff', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: 16, padding: '14px 16px', background: '#F5F0E8', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Competencies Average</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#3C2415' }}>Competencies Average</div>
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: RATING_BAND_COLOR[getRatingLabel(compAvg)] || '#1e293b' }}>
-                    {compAvg} <span style={{ fontSize: 13, fontWeight: 500, color: '#64748b' }}>/ 5 ({getRatingLabel(compAvg)})</span>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: RATING_BAND_COLOR[getRatingLabel(compAvg)] || '#3C2415' }}>
+                    {compAvg} <span style={{ fontSize: 13, fontWeight: 500, color: '#A0785A' }}>/ 5 ({getRatingLabel(compAvg)})</span>
                   </div>
                 </div>
               </Card>
@@ -466,8 +466,8 @@ export default function SelfAppraisal() {
 
           {/* Only Accepting Officer's Final Remarks */}
           {isFinalized && appraisal?.acceptingRemarks && (
-            <Card title="Final Remarks — Accepting Officer" style={{ marginTop: 20, background: '#f0fdf4', border: '1.5px solid #86efac' }}>
-              <p style={{ fontSize: 14 }}>{appraisal.acceptingRemarks}</p>
+            <Card title="Final Remarks — Accepting Officer" style={{ marginTop: 20, background: '#FAF8F4', border: '1px solid #E8DCC8' }}>
+              <p style={{ fontSize: 14, color: '#3C2415', lineHeight: 1.6 }}>{appraisal.acceptingRemarks}</p>
             </Card>
           )}
         </>
@@ -480,22 +480,24 @@ export default function SelfAppraisal() {
   );
 }
 
-const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 };
-const ratingRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9', gap: 12 };
+const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: '#6F4E37', marginBottom: 6 };
+const ratingRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #F5F0E8', gap: 12 };
 const ratingBubble = (val) => ({
   width: 44, height: 44, borderRadius: '50%',
-  background: val >= 4 ? '#dcfce7' : val >= 3 ? '#dbeafe' : '#fee2e2',
-  color: val >= 4 ? '#166534' : val >= 3 ? '#1d4ed8' : '#991b1b',
+  background: val >= 4 ? '#E8DCC8' : val >= 3 ? '#FAF8F4' : '#FDF0F0',
+  color: val >= 4 ? '#3C2415' : val >= 3 ? '#6F4E37' : '#8B3A3A',
+  border: `1px solid ${val >= 4 ? '#C4A882' : val >= 3 ? '#D4C3BB' : '#D4A0A0'}`,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   fontWeight: 800, fontSize: 16, flexShrink: 0,
 });
-const phaseCardStyle = { background: '#f8fafc', borderRadius: 12, padding: '16px 18px', textAlign: 'center', border: '1px solid #e2e8f0' };
-const phaseLabelStyle = { fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 6 };
-const phaseValStyle = { fontSize: 28, fontWeight: 900, color: '#1e293b' };
-const outOf5Style = { fontSize: 14, fontWeight: 500, color: '#94a3b8' };
-const phaseRawStyle = { fontSize: 11, color: '#94a3b8', marginTop: 2 };
+const phaseCardStyle = { background: '#FAF8F4', borderRadius: 12, padding: '16px 18px', textAlign: 'center', border: '1px solid #E8DCC8' };
+const phaseLabelStyle = { fontSize: 12, color: '#6F4E37', fontWeight: 600, marginBottom: 6 };
+const phaseValStyle = { fontSize: 28, fontWeight: 900, color: '#3C2415' };
+const outOf5Style = { fontSize: 14, fontWeight: 500, color: '#A0785A' };
+const phaseRawStyle = { fontSize: 11, color: '#A0785A', marginTop: 2 };
 const phaseBandStyle = { fontSize: 12, fontWeight: 700, marginTop: 4 };
 const ratingInputStyle = {
-  width: 70, padding: '6px 10px', border: '1.5px solid #d1d5db',
+  width: 70, padding: '8px 10px', border: '1.5px solid #C4A882',
   borderRadius: 8, fontSize: 13, fontWeight: 700, textAlign: 'center',
+  color: '#3C2415', fontFamily: "'Inter', sans-serif"
 };

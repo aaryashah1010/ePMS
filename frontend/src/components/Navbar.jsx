@@ -106,17 +106,17 @@ export default function Navbar() {
           <span style={avatarStyle}>{user?.name?.charAt(0)}</span>
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontSize: 14, fontWeight: 600 }}>{user?.name}</div>
-            {positionLabel && <div style={{ fontSize: 11, color: '#94a3b8' }}>{positionLabel}</div>}
+            {positionLabel && <div style={{ fontSize: 11, color: '#C4A882' }}>{positionLabel}</div>}
           </div>
           <span style={{ marginLeft: 6 }}>▾</span>
         </button>
         {open && (
           <div style={dropdownStyle}>
             <div style={dropItemInfoStyle}>
-              <div style={{ fontWeight: 600 }}>{user?.name}</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>{user?.email}</div>
+              <div style={{ fontWeight: 600, color: '#3C2415' }}>{user?.name}</div>
+              <div style={{ fontSize: 12, color: '#A0785A' }}>{user?.email}</div>
             </div>
-            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #E8DCC8' }} />
             <button style={dropItemStyle} onClick={handleLogout}>Sign Out</button>
           </div>
         )}
@@ -127,34 +127,35 @@ export default function Navbar() {
 
 const navStyle = {
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-  background: '#1e3a5f', color: '#fff', padding: '0 24px', height: 60,
-  position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+  background: '#3C2415', color: '#fff', padding: '0 24px', height: 60,
+  position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 8px rgba(60,36,21,0.25)',
+  fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
 };
 const brandStyle = { display: 'flex', alignItems: 'center', gap: 10 };
-const logoStyle = { fontSize: 22, fontWeight: 800, color: '#60a5fa', letterSpacing: 1 };
-const tagStyle = { fontSize: 12, color: '#94a3b8' };
+const logoStyle = { fontSize: 22, fontWeight: 800, color: '#A0785A', letterSpacing: 1.5 };
+const tagStyle = { fontSize: 12, color: '#C4A882' };
 const linksStyle = { display: 'flex', gap: 4 };
-const linkStyle = { color: '#cbd5e1', textDecoration: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 14, fontWeight: 500, transition: 'background 0.15s' };
-const activeLinkStyle = { background: 'rgba(96,165,250,0.2)', color: '#60a5fa' };
+const linkStyle = { color: '#E8DCC8', textDecoration: 'none', padding: '6px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, transition: 'all 0.2s ease' };
+const activeLinkStyle = { background: 'rgba(160,120,90,0.2)', color: '#F5F0E8', fontWeight: 600 };
 const userMenuStyle = { position: 'relative' };
 const userBtnStyle = {
   display: 'flex', alignItems: 'center', gap: 10, background: 'transparent',
-  border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '6px 12px',
-  color: '#fff', cursor: 'pointer',
+  border: '1px solid rgba(200,168,130,0.3)', borderRadius: 10, padding: '6px 12px',
+  color: '#fff', cursor: 'pointer', fontFamily: "'Inter', sans-serif", transition: 'all 0.2s',
 };
 const avatarStyle = {
-  width: 32, height: 32, background: '#3b82f6', borderRadius: '50%',
+  width: 32, height: 32, background: '#A0785A', borderRadius: '50%',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  fontWeight: 700, fontSize: 14, flexShrink: 0,
+  fontWeight: 700, fontSize: 14, flexShrink: 0, color: '#FFFFFF',
 };
 const dropdownStyle = {
-  position: 'absolute', right: 0, top: '110%', background: '#fff', color: '#1e293b',
-  borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', minWidth: 200,
-  padding: '8px 0', zIndex: 200,
+  position: 'absolute', right: 0, top: '110%', background: '#FAF8F4', color: '#3C2415',
+  borderRadius: 12, boxShadow: '0 8px 24px rgba(60,36,21,0.15)', minWidth: 200,
+  padding: '8px 0', zIndex: 200, border: '1px solid #E8DCC8',
 };
 const dropItemInfoStyle = { padding: '10px 16px' };
 const dropItemStyle = {
   display: 'block', width: '100%', padding: '10px 16px', background: 'none',
-  border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 14, color: '#ef4444',
-  fontWeight: 500,
+  border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 14, color: '#8B3A3A',
+  fontWeight: 500, fontFamily: "'Inter', sans-serif",
 };

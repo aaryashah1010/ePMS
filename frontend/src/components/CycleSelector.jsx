@@ -37,7 +37,7 @@ export default function CycleSelector({ value, onChange, onCycleChange, style = 
     <select
       value={value || ''}
       onChange={handleChange}
-      style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #d1d5db', fontSize: 14, ...style }}
+      style={{ padding: '10px 14px', borderRadius: 10, border: '1.5px solid #C4A882', fontSize: 14, background: '#FAF8F4', color: '#3C2415', fontFamily: "'Inter', sans-serif", transition: 'border-color 0.2s', ...style }}
     >
       <option value="">-- Select Cycle --</option>
       {cycles.map((c) => (
