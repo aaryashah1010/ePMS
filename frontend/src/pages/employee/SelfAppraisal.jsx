@@ -137,11 +137,17 @@ export default function SelfAppraisal() {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'SUBMITTED': return 'Appraisal under review by Reporting Officer';
-      case 'REPORTING_DONE': return 'Under review by Reviewing Officer';
-      case 'REVIEWING_DONE': return 'Under review by Accepting Officer';
+      case 'SUBMITTED':
+        if (!user?.reportingOfficerId) return 'Reporting Officer not assigned — Please contact HR';
+        return `Under review by ${user?.reportingOfficer?.name || 'Reporting Officer'}`;
+      case 'REPORTING_DONE':
+        if (!user?.reviewingOfficerId) return 'Reviewing Officer not assigned — Please contact HR';
+        return `Under review by ${user?.reviewingOfficer?.name || 'Reviewing Officer'}`;
+      case 'REVIEWING_DONE':
+        if (!user?.acceptingOfficerId) return 'Accepting Officer not assigned — Please contact HR';
+        return `Under review by ${user?.acceptingOfficer?.name || 'Accepting Officer'}`;
       case 'ACCEPTING_DONE': return 'Under review by HR';
-      case 'FINALIZED': return '✅ Appraisal completed — View your score';
+      case 'FINALIZED': return 'Appraisal completed — View your score';
       default: return 'Draft / Not Submitted';
     }
   };
@@ -261,7 +267,7 @@ export default function SelfAppraisal() {
               <div style={{ marginBottom: 12 }}>
                 <Badge label={appraisal.status} />
                 {!isDraft && (
-                  <p style={{ fontSize: 13, color: '#6F4E37', marginTop: 8, fontWeight: 600 }}>
+                  <p style={{ fontSize: 13, color: (appraisal.status === 'SUBMITTED' && !user?.reportingOfficerId) || (appraisal.status === 'REPORTING_DONE' && !user?.reviewingOfficerId) || (appraisal.status === 'REVIEWING_DONE' && !user?.acceptingOfficerId) ? '#8B3A3A' : '#6F4E37', marginTop: 8, fontWeight: 600 }}>
                     {getStatusLabel(appraisal.status)}
                   </p>
                 )}
@@ -285,9 +291,6 @@ export default function SelfAppraisal() {
                 <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: '#3C2415' }}>
                   {isDraft ? 'Self-Rate KPAs' : 'Your KPA Self-Ratings'}
                 </h4>
-                {!isDraft && (
-                  <div style={{ fontSize: 12, color: '#8B6914', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
-                )}
                 {kpas.map((k) => (
                   <div key={k.id} style={{ padding: '14px 0', borderBottom: '1px solid #F5F0E8' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
@@ -330,9 +333,6 @@ export default function SelfAppraisal() {
                 <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: '#3C2415' }}>
                   {isDraft ? 'Self-Rate Values & Competencies (1-5)' : 'Your Values & Competencies Self-Ratings'}
                 </h4>
-                {!isDraft && (
-                  <div style={{ fontSize: 12, color: '#8B6914', marginBottom: 10 }}>ℹ️ These are read-only after submission. Your ratings are visible to your reviewing officers.</div>
-                )}
                 {[{ label: 'Values', list: valuesAttrs }, { label: 'Competencies', list: competencyAttrs }].map(({ label, list }) => (
                   list.length > 0 && (
                     <div key={label} style={{ marginBottom: 16 }}>

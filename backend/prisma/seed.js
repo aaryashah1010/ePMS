@@ -8,112 +8,21 @@ async function main() {
 
   const rounds = 10;
 
-  // Create Managing Director (CEO) first
-  const ceo = await prisma.user.upsert({
+  // Create Managing Director (CEO) — the only seeded account
+  await prisma.user.upsert({
     where: { email: 'ceo@epms.com' },
     update: {},
     create: {
       name: 'Managing Director',
       email: 'ceo@epms.com',
-      password: await bcrypt.hash('ceo@123', rounds),
+      password: await bcrypt.hash('123456', rounds),
       role: 'MANAGING_DIRECTOR',
       department: 'Management',
       employeeCode: 'MD001',
     },
   });
 
-  // Create HR Admin — reporting to MD
-  const hr = await prisma.user.upsert({
-    where: { email: 'hr@epms.com' },
-    update: {
-      reportingOfficerId: ceo.id,
-      reviewingOfficerId: ceo.id,
-      acceptingOfficerId: ceo.id,
-    },
-    create: {
-      name: 'HR Admin',
-      email: 'hr@epms.com',
-      password: await bcrypt.hash('hr@123', rounds),
-      role: 'HR',
-      department: 'Human Resources',
-      employeeCode: 'HR001',
-      reportingOfficerId: ceo.id,
-      reviewingOfficerId: ceo.id,
-      acceptingOfficerId: ceo.id,
-    },
-  });
-
-  // Create Employee
-  const emp1 = await prisma.user.upsert({
-    where: { email: 'alice@epms.com' },
-    update: {},
-    create: {
-      name: 'Alice Developer',
-      email: 'alice@epms.com',
-      password: await bcrypt.hash('alice@123', rounds),
-      role: 'EMPLOYEE',
-      department: 'Engineering',
-      employeeCode: 'EMP001',
-    },
-  });
-
-  const emp2 = await prisma.user.upsert({
-    where: { email: 'bob@epms.com' },
-    update: {},
-    create: {
-      name: 'Bob Engineer',
-      email: 'bob@epms.com',
-      password: await bcrypt.hash('bob@123', rounds),
-      role: 'EMPLOYEE',
-      department: 'Engineering',
-      employeeCode: 'EMP002',
-    },
-  });
-
-  const emp3 = await prisma.user.upsert({
-    where: { email: 'carol@epms.com' },
-    update: {},
-    create: {
-      name: 'Carol Designer',
-      email: 'carol@epms.com',
-      password: await bcrypt.hash('carol@123', rounds),
-      role: 'EMPLOYEE',
-      department: 'Design',
-      employeeCode: 'EMP003',
-    },
-  });
-
-  const emp4 = await prisma.user.upsert({
-    where: { email: 'dave@epms.com' },
-    update: {},
-    create: {
-      name: 'Dave Analyst',
-      email: 'dave@epms.com',
-      password: await bcrypt.hash('dave@123', rounds),
-      role: 'EMPLOYEE',
-      department: 'Data',
-      employeeCode: 'EMP004',
-    },
-  });
-
-  // Create Appraisal Cycle
-  const cycle = await prisma.appraisalCycle.upsert({
-    where: { id: 'seed-cycle-2024' },
-    update: {},
-    create: {
-      id: 'seed-cycle-2024',
-      name: 'Annual Appraisal 2024',
-      year: 2024,
-      phase: 'GOAL_SETTING',
-      status: 'ACTIVE',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2024-12-31'),
-      description: 'Annual performance appraisal cycle for FY 2024',
-      createdBy: hr.id,
-    },
-  });
-
-  // Create Attributes Master
+  // Seed Attribute Master Data (Values & Competencies)
   const values = [
     { name: 'Integrity', type: 'VALUES', description: 'Demonstrates honesty and ethical behavior' },
     { name: 'Teamwork', type: 'VALUES', description: 'Works collaboratively with team members' },
@@ -142,12 +51,7 @@ async function main() {
 
   console.log('Seed completed successfully!');
   console.log('\n--- Login Credentials ---');
-  console.log('CEO (MD):          ceo@epms.com        / ceo@123');
-  console.log('HR Admin:          hr@epms.com         / hr@123');
-  console.log('Employee:          alice@epms.com      / alice@123');
-  console.log('Employee 2:        bob@epms.com        / bob@123');
-  console.log('Employee 3:        carol@epms.com      / carol@123');
-  console.log('Employee 4:        dave@epms.com       / dave@123');
+  console.log('CEO (MD):  ceo@epms.com  /  ceo@123');
 }
 
 main()

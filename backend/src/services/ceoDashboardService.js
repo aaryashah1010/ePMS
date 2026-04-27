@@ -39,7 +39,7 @@ async function getFullDashboard(cycleId) {
 
   return {
     cycle: { id: cycle.id, name: cycle.name, year: cycle.year, phase: cycle.phase, status: cycle.status },
-    allCycles: allCycles.map(c => ({ id: c.id, name: c.name, year: c.year, status: c.status })),
+    allCycles: allCycles.map(c => ({ id: c.id, name: c.name, year: c.year, phase: c.phase, status: c.status })),
     totalEmployees,
     cycleStatus,
     performanceSummary,

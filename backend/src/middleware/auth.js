@@ -14,7 +14,10 @@ async function authenticate(req, res, next) {
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { id: true, name: true, email: true, role: true, department: true,
-                reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true, isActive: true },
+                reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true, isActive: true,
+                reportingOfficer: { select: { id: true, name: true } },
+                reviewingOfficer: { select: { id: true, name: true } },
+                acceptingOfficer: { select: { id: true, name: true } } },
     });
 
     if (!user || !user.isActive) throw new AuthError('User not found or inactive');

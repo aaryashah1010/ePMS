@@ -7,8 +7,10 @@ import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
 import ConfirmModal from '../../components/ConfirmModal';
 import { midYearAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MidYearReview() {
+  const { user: authUser } = useAuth();
   const [cycleId, setCycleId] = useState('');
   const [selectedCycle, setSelectedCycle] = useState(null);
   const [review, setReview] = useState(null);
@@ -94,9 +96,25 @@ export default function MidYearReview() {
 
           {isPhaseLocked && (
             <div style={{ marginBottom: 16, background: '#FDF8EE', border: '1px solid #D4C090', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B8860B' }}>
-              🔒 This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Mid-Year Review is now <strong>read-only</strong>.
+              This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Mid-Year Review is now <strong>read-only</strong>.
             </div>
           )}
+
+          {review?.status === 'SUBMITTED' && (() => {
+            if (!authUser?.reportingOfficerId) {
+              return (
+                <div style={{ marginBottom: 16, background: '#FDF0F0', border: '1px solid #D4A0A0', borderRadius: 10, padding: '14px 18px', fontSize: 13 }}>
+                  <strong style={{ color: '#8B3A3A' }}>Reporting Officer Not Assigned</strong>
+                  <p style={{ color: '#8B3A3A', margin: '6px 0 0' }}>Your reporting officer has not been assigned yet. Please contact HR to assign your reporting officer so your mid-year review can be evaluated.</p>
+                </div>
+              );
+            }
+            return (
+              <div style={{ marginBottom: 16, background: '#F0FAF0', border: '1px solid #C8E6C9', borderRadius: 10, padding: '14px 18px', fontSize: 13, color: '#2E7D32' }}>
+                <strong>Review Submitted</strong> — Your mid-year review is under evaluation by <strong>{authUser.reportingOfficer?.name || 'your Reporting Officer'}</strong>.
+              </div>
+            );
+          })()}
 
           <Card title="Progress Update">
             {review && (

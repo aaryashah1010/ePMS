@@ -7,10 +7,12 @@ import Alert from '../../components/Alert';
 import CycleSelector from '../../components/CycleSelector';
 import ConfirmModal from '../../components/ConfirmModal';
 import { kpaAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const EMPTY_FORM = { title: '', description: '', weightage: '' };
 
 export default function GoalSetting() {
+  const { user: authUser } = useAuth();
   const [cycleId, setCycleId] = useState('');
   const [selectedCycle, setSelectedCycle] = useState(null);
   const [kpas, setKpas] = useState([]);
@@ -24,7 +26,7 @@ export default function GoalSetting() {
   const isPhaseLocked = selectedCycle && selectedCycle.phase !== 'GOAL_SETTING';
 
   const totalWeight = kpas.reduce((s, k) => s + k.weightage, 0);
-  const isSubmitted = kpas.length > 0 && kpas.every((k) => k.status === 'SUBMITTED');
+  const isSubmitted = kpas.length > 0 && kpas.every((k) => k.status !== 'DRAFT');
 
   const loadKpas = async (cid) => {
     if (!cid) return;
@@ -159,9 +161,25 @@ export default function GoalSetting() {
 
           {isPhaseLocked && (
             <div style={{ marginBottom: 16, background: '#FDF8EE', border: '1px solid #D4C090', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B8860B' }}>
-              🔒 This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Goal Setting is now <strong>read-only</strong>.
+              This cycle has moved to the <strong>{selectedCycle?.phase?.replace(/_/g, ' ')}</strong> phase. Goal Setting is now <strong>read-only</strong>.
             </div>
           )}
+
+          {kpas.length > 0 && kpas.every(k => k.status === 'SUBMITTED') && (() => {
+            if (!authUser?.reportingOfficerId) {
+              return (
+                <div style={{ marginBottom: 16, background: '#FDF0F0', border: '1px solid #D4A0A0', borderRadius: 10, padding: '14px 18px', fontSize: 13 }}>
+                  <strong style={{ color: '#8B3A3A' }}>Reporting Officer Not Assigned</strong>
+                  <p style={{ color: '#8B3A3A', margin: '6px 0 0' }}>Your reporting officer has not been assigned yet. Please contact HR to assign your reporting officer so your goals can be reviewed.</p>
+                </div>
+              );
+            }
+            return (
+              <div style={{ marginBottom: 16, background: '#F0FAF0', border: '1px solid #C8E6C9', borderRadius: 10, padding: '14px 18px', fontSize: 13, color: '#2E7D32' }}>
+                <strong>Goals Submitted</strong> — Your goals are under review by <strong>{authUser.reportingOfficer?.name || 'your Reporting Officer'}</strong>.
+              </div>
+            );
+          })()}
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 20, alignItems: 'start' }}>
             {/* Add KPA form - hidden when phase locked or already submitted */}

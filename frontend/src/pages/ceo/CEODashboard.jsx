@@ -84,8 +84,51 @@ export default function CEODashboard() {
         </div>
       </div>
 
+      {/* All Cycles Overview */}
+      <Card title="All Appraisal Cycles" style={{ marginBottom: 20 }}>
+        {!allCycles || allCycles.length === 0 ? (
+          <p style={{ color: '#A0785A', fontSize: 14 }}>No appraisal cycles found.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={tableStyle}>
+              <thead>
+                <tr style={thRowStyle}>
+                  {['Cycle Name', 'Year', 'Phase', 'Status', ''].map(h => <th key={h} style={thStyle}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {allCycles.map((c) => (
+                  <tr key={c.id} style={{ ...trStyle, background: c.id === selectedCycle ? '#FDF8EE' : 'transparent' }}>
+                    <td style={{ ...tdStyle, fontWeight: 600, color: '#3C2415' }}>{c.name}</td>
+                    <td style={tdStyle}>{c.year}</td>
+                    <td style={tdStyle}>
+                      <span style={{ padding: '3px 10px', borderRadius: 16, fontSize: 11, fontWeight: 600, background: '#FAF8F4', border: '1px solid #E8DCC8', color: '#6F4E37' }}>
+                        {c.phase?.replace(/_/g, ' ') || '—'}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ padding: '3px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, background: c.status === 'ACTIVE' ? '#F0FAF0' : '#FAF8F4', color: c.status === 'ACTIVE' ? '#4A7C59' : '#A0785A', border: `1px solid ${c.status === 'ACTIVE' ? '#C8E6C9' : '#E8DCC8'}` }}>
+                        {c.status}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <button
+                        onClick={() => { setSelectedCycle(c.id); loadDashboard(c.id); }}
+                        style={{ padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: c.id === selectedCycle ? '2px solid #3C2415' : '1px solid #C4A882', background: c.id === selectedCycle ? '#3C2415' : '#FAF8F4', color: c.id === selectedCycle ? '#fff' : '#6F4E37', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {c.id === selectedCycle ? 'Viewing' : 'View Details'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
       {/* SECTION 1: Cycle Status */}
-      <Card title="Section 1 — Cycle Status" style={{ marginBottom: 20 }}>
+      <Card title="Cycle Status" style={{ marginBottom: 20 }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={tableStyle}>
             <thead>
@@ -127,7 +170,7 @@ export default function CEODashboard() {
       </Card>
 
       {/* SECTION 2: Performance Summary */}
-      <Card title="Section 2 — Organisation Performance Summary" style={{ marginBottom: 20 }}>
+      <Card title="Organisation Performance Summary" style={{ marginBottom: 20 }}>
         {performanceSummary?.total === 0 ? (
           <p style={{ color: '#A0785A', fontSize: 14 }}>No finalized appraisals yet for this cycle.</p>
         ) : (
@@ -149,14 +192,14 @@ export default function CEODashboard() {
               ))}
             </div>
             <div style={{ padding: '10px 14px', background: performanceSummary?.bellCurveOk ? '#FAF8F4' : '#FDF0F0', border: `1px solid ${performanceSummary?.bellCurveOk ? '#E8DCC8' : '#D4A0A0'}`, borderRadius: 8, fontSize: 13, fontWeight: 600, color: performanceSummary?.bellCurveOk ? '#3C2415' : '#8B3A3A' }}>
-              Bell Curve Status: {performanceSummary?.bellCurveOk ? '✅ Normal Distribution' : '⚠️ Distribution Skewed'}
+              Bell Curve Status: {performanceSummary?.bellCurveOk ? 'Normal Distribution' : 'Distribution Skewed'}
             </div>
           </>
         )}
       </Card>
 
       {/* SECTION 3: Department Performance */}
-      <Card title="Section 3 — Department Wise Performance" style={{ marginBottom: 20 }}>
+      <Card title="Department Wise Performance" style={{ marginBottom: 20 }}>
         {departmentPerformance?.length === 0 ? (
           <p style={{ color: '#A0785A', fontSize: 14 }}>No department data available.</p>
         ) : (
@@ -191,32 +234,11 @@ export default function CEODashboard() {
         )}
       </Card>
 
-      {/* SECTION 4: Key Alerts */}
-      <Card title="Section 4 — Key Alerts ⚠️" style={{ marginBottom: 20 }}>
-        {alerts?.length === 0 ? (
-          <p style={{ color: '#4A7C59', fontSize: 14, fontWeight: 600 }}>✅ No alerts — everything looks good!</p>
-        ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
-            {alerts?.map((a, i) => (
-              <div key={i} style={{
-                padding: '12px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                background: a.level === 'red' ? '#FDF0F0' : a.level === 'yellow' ? '#FDF8EE' : '#FAF8F4',
-                color: a.level === 'red' ? '#8B3A3A' : a.level === 'yellow' ? '#B8860B' : '#4A7C59',
-                borderLeft: `4px solid ${a.level === 'red' ? '#8B3A3A' : a.level === 'yellow' ? '#B8860B' : '#4A7C59'}`,
-                borderTop: '1px solid rgba(0,0,0,0.05)',
-                borderRight: '1px solid rgba(0,0,0,0.05)',
-                borderBottom: '1px solid rgba(0,0,0,0.05)',
-              }}>
-                {a.icon} {a.text}
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+
 
       {/* SECTION 6: Top & Bottom Performers */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20, marginBottom: 20 }}>
-        <Card title="Top Performers 🏆">
+        <Card title="Top Performers">
           {topPerformers?.length === 0 ? (
             <p style={{ color: '#A0785A', fontSize: 13 }}>No finalized scores yet.</p>
           ) : (
@@ -240,7 +262,7 @@ export default function CEODashboard() {
           )}
         </Card>
 
-        <Card title="Needs Attention ⚡">
+        <Card title="Needs Attention">
           {bottomPerformers?.length === 0 ? (
             <p style={{ color: '#A0785A', fontSize: 13 }}>No finalized scores yet.</p>
           ) : (
@@ -266,7 +288,7 @@ export default function CEODashboard() {
       </div>
 
       {/* SECTION 7: Year on Year */}
-      <Card title="Section 7 — Year on Year Comparison" style={{ marginBottom: 20 }}>
+      <Card title="Year on Year Comparison" style={{ marginBottom: 20 }}>
         {yearOnYear?.length === 0 ? (
           <p style={{ color: '#A0785A', fontSize: 14 }}>No historical data available.</p>
         ) : (
@@ -329,7 +351,7 @@ const spinnerStyle = { width: 40, height: 40, border: '4px solid #E8DCC8', borde
 const headerBox = { marginBottom: 24, background: 'linear-gradient(135deg, #3C2415 0%, #6F4E37 100%)', borderRadius: 16, padding: '28px 32px', color: '#fff', boxShadow: '0 10px 25px rgba(60,36,21,0.15)' };
 const titleStyle = { fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.01em' };
 const subtitleStyle = { fontSize: 14, color: '#E8DCC8' };
-const selectStyle = { padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" };
+const selectStyle = { padding: '8px 14px', borderRadius: 8, border: '1px solid #D4C090', background: '#FFFFFF', color: '#3C2415', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif", outline: 'none', minWidth: 180 };
 const summaryCardStyle = { flex: 1, minWidth: 140, background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', borderRadius: 12, padding: '16px 18px', border: '1px solid rgba(255,255,255,0.15)' };
 const tableStyle = { width: '100%', borderCollapse: 'collapse' };
 const thRowStyle = { background: '#FAF8F4' };

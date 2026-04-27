@@ -55,6 +55,12 @@ model User {
   reportingOfficer   User?    @relation("ReportingRelation", fields: [reportingOfficerId], references: [id])
   reportees          User[]   @relation("ReportingRelation")
 
+  reviewingOfficer   User?    @relation("ReviewingRelation", fields: [reviewingOfficerId], references: [id])
+  reviewees          User[]   @relation("ReviewingRelation")
+
+  acceptingOfficer   User?    @relation("AcceptingRelation", fields: [acceptingOfficerId], references: [id])
+  appraisees         User[]   @relation("AcceptingRelation")
+
   kpaGoals           KpaGoal[]
   midYearReviews     MidYearReview[]
   annualAppraisals   AnnualAppraisal[]

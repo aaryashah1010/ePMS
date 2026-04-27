@@ -89,6 +89,9 @@ async function updateUser(id, data) {
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) throw new NotFoundError('User');
 
+  // Employee code is immutable once set
+  delete data.employeeCode;
+
   if (
     (data.reportingOfficerId && data.reportingOfficerId === id) ||
     (data.reviewingOfficerId && data.reviewingOfficerId === id) ||
@@ -127,6 +130,22 @@ async function updateUser(id, data) {
         reviewingOfficerId: updatedUser.reviewingOfficerId,
         acceptingOfficerId: updatedUser.acceptingOfficerId,
       }
+    });
+  }
+
+  // When deactivating a user, clear their officer assignments from all other users
+  if (data.isActive === false && user.isActive === true) {
+    await prisma.user.updateMany({
+      where: { reportingOfficerId: id },
+      data: { reportingOfficerId: null },
+    });
+    await prisma.user.updateMany({
+      where: { reviewingOfficerId: id },
+      data: { reviewingOfficerId: null },
+    });
+    await prisma.user.updateMany({
+      where: { acceptingOfficerId: id },
+      data: { acceptingOfficerId: null },
     });
   }
 

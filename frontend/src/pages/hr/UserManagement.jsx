@@ -25,7 +25,7 @@ export default function UserManagement() {
     (u) => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const officers = users.filter((u) => u.role !== 'HR');
+  const officers = users.filter((u) => u.role !== 'HR' && u.role !== 'MANAGING_DIRECTOR');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,9 +33,17 @@ export default function UserManagement() {
     setMsg({ type: '', text: '' });
     try {
       const data = { ...form };
-      if (!data.reportingOfficerId) delete data.reportingOfficerId;
-      if (!data.reviewingOfficerId) delete data.reviewingOfficerId;
-      if (!data.acceptingOfficerId) delete data.acceptingOfficerId;
+      if (editId) {
+        // On update: send null to clear officer assignments
+        if (!data.reportingOfficerId) data.reportingOfficerId = null;
+        if (!data.reviewingOfficerId) data.reviewingOfficerId = null;
+        if (!data.acceptingOfficerId) data.acceptingOfficerId = null;
+      } else {
+        // On create: omit empty fields
+        if (!data.reportingOfficerId) delete data.reportingOfficerId;
+        if (!data.reviewingOfficerId) delete data.reviewingOfficerId;
+        if (!data.acceptingOfficerId) delete data.acceptingOfficerId;
+      }
       if (!data.employeeCode) delete data.employeeCode;
       if (editId) {
         if (!data.password) delete data.password;
@@ -105,27 +113,27 @@ export default function UserManagement() {
               </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>Employee Code *</label>
-                <input style={inputStyle} value={form.employeeCode || ''} onChange={(e) => setForm({ ...form, employeeCode: e.target.value })} placeholder="e.g., EMP001" required />
+                <input style={{ ...inputStyle, ...(editId ? { background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed' } : {}) }} value={form.employeeCode || ''} onChange={(e) => setForm({ ...form, employeeCode: e.target.value.toUpperCase() })} placeholder="e.g., EMP001" required pattern="^[A-Z]{2,4}\d{3,}$" title="Format: 2-4 letters followed by 3+ digits (e.g., EMP001)" readOnly={!!editId} />
               </div>
-              {form.role !== 'HR' && (
+              {form.role !== 'HR' && form.role !== 'MANAGING_DIRECTOR' && (
                 <>
                   <div style={fieldStyle}>
-                    <label style={labelStyle}>Reporting Officer *</label>
-                    <select style={inputStyle} value={form.reportingOfficerId || ''} onChange={(e) => setForm({ ...form, reportingOfficerId: e.target.value })} required>
+                    <label style={labelStyle}>Reporting Officer</label>
+                    <select style={inputStyle} value={form.reportingOfficerId || ''} onChange={(e) => setForm({ ...form, reportingOfficerId: e.target.value })}>
                       <option value="">-- None --</option>
                       {officers.filter((o) => o.id !== editId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                   <div style={fieldStyle}>
-                    <label style={labelStyle}>Reviewing Officer *</label>
-                    <select style={inputStyle} value={form.reviewingOfficerId || ''} onChange={(e) => setForm({ ...form, reviewingOfficerId: e.target.value })} required>
+                    <label style={labelStyle}>Reviewing Officer</label>
+                    <select style={inputStyle} value={form.reviewingOfficerId || ''} onChange={(e) => setForm({ ...form, reviewingOfficerId: e.target.value })}>
                       <option value="">-- None --</option>
                       {officers.filter((o) => o.id !== editId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
                   </div>
                   <div style={fieldStyle}>
-                    <label style={labelStyle}>Accepting Officer *</label>
-                    <select style={inputStyle} value={form.acceptingOfficerId || ''} onChange={(e) => setForm({ ...form, acceptingOfficerId: e.target.value })} required>
+                    <label style={labelStyle}>Accepting Officer</label>
+                    <select style={inputStyle} value={form.acceptingOfficerId || ''} onChange={(e) => setForm({ ...form, acceptingOfficerId: e.target.value })}>
                       <option value="">-- None --</option>
                       {officers.filter((o) => o.id !== editId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
@@ -152,7 +160,7 @@ export default function UserManagement() {
           <table style={tableStyle}>
             <thead>
               <tr style={thRowStyle}>
-                {['Name', 'Email', 'Code', 'Role', 'Department', 'Status', 'Actions'].map((h) => (
+                {['Name', 'Email', 'Code', 'Role', 'Department', 'Status', 'Officer Assignment', 'Actions'].map((h) => (
                   <th key={h} style={thStyle}>{h}</th>
                 ))}
               </tr>
@@ -169,6 +177,20 @@ export default function UserManagement() {
                     <span style={{ color: u.isActive ? '#4A7C59' : '#8B3A3A', fontWeight: 600, fontSize: 13 }}>
                       {u.isActive ? 'Active' : 'Inactive'}
                     </span>
+                  </td>
+                  <td style={tdStyle}>
+                    {u.role === 'MANAGING_DIRECTOR' ? (
+                      <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: '#F0FAF0', color: '#4A7C59', border: '1px solid #C8E6C9' }}>Done</span>
+                    ) : u.role === 'HR' ? (
+                      <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: '#F0FAF0', color: '#4A7C59', border: '1px solid #C8E6C9' }}>Done</span>
+                    ) : (() => {
+                      const done = u.reportingOfficerId && u.reviewingOfficerId && u.acceptingOfficerId;
+                      return (
+                        <span style={{ padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: done ? '#F0FAF0' : '#FDF0F0', color: done ? '#4A7C59' : '#8B3A3A', border: `1px solid ${done ? '#C8E6C9' : '#D4A0A0'}` }}>
+                          {done ? 'Done' : 'Pending'}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', gap: 6 }}>

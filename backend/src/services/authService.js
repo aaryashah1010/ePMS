@@ -4,7 +4,14 @@ const prisma = require('../utils/prisma');
 const { AuthError, NotFoundError } = require('../utils/errors');
 
 async function login(email, password) {
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      reportingOfficer: { select: { id: true, name: true } },
+      reviewingOfficer: { select: { id: true, name: true } },
+      acceptingOfficer: { select: { id: true, name: true } },
+    },
+  });
   if (!user || !user.isActive) throw new AuthError('Invalid credentials');
 
   const valid = await bcrypt.compare(password, user.password);

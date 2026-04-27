@@ -78,7 +78,7 @@ export default function CEOUserManagement() {
       {showForm && (
         <Card title={editId ? 'Edit HR User' : 'Create New HR Account'} style={{ marginBottom: 20 }}>
           <div style={{ padding: '10px 14px', background: '#FAF8F4', border: '1px solid #E8DCC8', borderRadius: 8, marginBottom: 16, fontSize: 13, color: '#3C2415', fontWeight: 500 }}>
-            ℹ️ HR users are automatically assigned to the Managing Director as their Reporting, Reviewing, and Accepting Officer.
+            HR users are automatically assigned to the Managing Director as their Reporting, Reviewing, and Accepting Officer.
           </div>
           <form onSubmit={handleSubmit}>
             <div style={gridStyle}>
@@ -103,8 +103,20 @@ export default function CEOUserManagement() {
                 <input style={inputStyle} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
               </div>
               <div>
-                <label style={labelStyle}>Employee Code</label>
-                <input style={inputStyle} value={form.employeeCode} onChange={(e) => setForm({ ...form, employeeCode: e.target.value })} placeholder="e.g., HR002" />
+                <label style={labelStyle}>Employee Code *</label>
+                <input style={{ ...inputStyle, ...(editId ? { background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed' } : {}) }} value={form.employeeCode} onChange={(e) => setForm({ ...form, employeeCode: e.target.value.toUpperCase() })} placeholder="e.g., HR001" required pattern="^[A-Z]{2,4}\d{3,}$" title="Format: 2-4 letters followed by 3+ digits (e.g., HR001)" readOnly={!!editId} />
+              </div>
+              <div>
+                <label style={labelStyle}>Reporting Officer</label>
+                <input style={{ ...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed' }} value="Managing Director" readOnly />
+              </div>
+              <div>
+                <label style={labelStyle}>Reviewing Officer</label>
+                <input style={{ ...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed' }} value="Managing Director" readOnly />
+              </div>
+              <div>
+                <label style={labelStyle}>Accepting Officer</label>
+                <input style={{ ...inputStyle, background: '#FAF8F4', color: '#A0785A', cursor: 'not-allowed' }} value="Managing Director" readOnly />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>

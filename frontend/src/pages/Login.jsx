@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Alert from '../components/Alert';
+import api from '../services/api';
 
 const ROLE_REDIRECTS = {
   EMPLOYEE: '/employee/dashboard',
@@ -12,12 +13,44 @@ const ROLE_REDIRECTS = {
   MANAGING_DIRECTOR: '/ceo/dashboard',
 };
 
+const ROLE_ICON = {
+  MANAGING_DIRECTOR: 'admin_panel_settings',
+  HR: 'psychology',
+  EMPLOYEE: 'person',
+  REPORTING_OFFICER: 'assignment_ind',
+  REVIEWING_OFFICER: 'rate_review',
+  ACCEPTING_OFFICER: 'verified',
+};
+
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [demoAccounts, setDemoAccounts] = useState([]);
+
+  useEffect(() => {
+    // Fetch current accounts from backend
+    api.get('/auth/demo-accounts')
+      .then(r => {
+        const accounts = r.data.accounts || [];
+        // Build short labels: CEO, HR1, HR2, EMP1, EMP2, etc.
+        const counters = {};
+        const labeled = accounts.map(a => {
+          let prefix;
+          if (a.role === 'MANAGING_DIRECTOR') prefix = 'CEO';
+          else if (a.role === 'HR') prefix = 'HR';
+          else prefix = 'EMP';
+          
+          counters[prefix] = (counters[prefix] || 0) + 1;
+          const label = counters[prefix] === 1 && prefix === 'CEO' ? 'CEO' : `${prefix}${counters[prefix]}`;
+          return { ...a, label, pass: '123456' };
+        });
+        setDemoAccounts(labeled);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +68,7 @@ export default function Login() {
 
   return (
     <div style={pageStyle}>
-      {/* Split panel layout inspired by Stitch login */}
+      {/* Split panel layout */}
       <div style={splitContainerStyle}>
         {/* Left branding panel */}
         <div style={leftPanelStyle}>
@@ -103,29 +136,25 @@ export default function Login() {
             </button>
           </form>
 
-          <div style={hintsStyle}>
-            <p style={{ fontSize: 12, color: '#6F4E37', marginBottom: 10, fontWeight: 600 }}>Quick-fill Demo Accounts:</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {[
-                ['CEO (MD)', 'ceo@epms.com', 'ceo@123', 'admin_panel_settings'],
-                ['HR Admin', 'hr@epms.com', 'hr@123', 'psychology'],
-                ['Alice', 'alice@epms.com', 'alice@123', 'person'],
-                ['Bob', 'bob@epms.com', 'bob@123', 'assignment_ind'],
-                ['Carol', 'carol@epms.com', 'carol@123', 'rate_review'],
-                ['Dave', 'dave@epms.com', 'dave@123', 'verified'],
-              ].map(([role, email, pass, icon]) => (
-                <button
-                  key={email}
-                  type="button"
-                  style={quickBtnStyle}
-                  onClick={() => setForm({ email, password: pass })}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{icon}</span>
-                  {role}
-                </button>
-              ))}
+          {demoAccounts.length > 0 && (
+            <div style={hintsStyle}>
+              <p style={{ fontSize: 12, color: '#6F4E37', marginBottom: 10, fontWeight: 600 }}>Quick-fill Demo Accounts:</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {demoAccounts.map((a) => (
+                  <button
+                    key={a.email}
+                    type="button"
+                    style={quickBtnStyle}
+                    onClick={() => setForm({ email: a.email, password: '123456' })}
+                    title={`${a.name} (${a.email})`}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{ROLE_ICON[a.role] || 'person'}</span>
+                    {a.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

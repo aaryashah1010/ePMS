@@ -52,11 +52,17 @@ export default function AppraisalSummary() {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'SUBMITTED': return 'Appraisal under review by Reporting Officer';
-      case 'REPORTING_DONE': return 'Under review by Reviewing Officer';
-      case 'REVIEWING_DONE': return 'Under review by Accepting Officer';
+      case 'SUBMITTED':
+        if (!user?.reportingOfficerId) return 'Reporting Officer not assigned — Contact HR';
+        return `Under review by ${user?.reportingOfficer?.name || 'Reporting Officer'}`;
+      case 'REPORTING_DONE':
+        if (!user?.reviewingOfficerId) return 'Reviewing Officer not assigned — Contact HR';
+        return `Under review by ${user?.reviewingOfficer?.name || 'Reviewing Officer'}`;
+      case 'REVIEWING_DONE':
+        if (!user?.acceptingOfficerId) return 'Accepting Officer not assigned — Contact HR';
+        return `Under review by ${user?.acceptingOfficer?.name || 'Accepting Officer'}`;
       case 'ACCEPTING_DONE': return 'Under review by HR';
-      case 'FINALIZED': return '✅ Appraisal completed — View your score';
+      case 'FINALIZED': return 'Appraisal completed — View your score';
       default: return 'Draft / Not Submitted';
     }
   };
