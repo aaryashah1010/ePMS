@@ -58,13 +58,12 @@ test('midYearController.addRemarks maps body fields into the service call', asyn
   assert.equal(res.body.review.status, 'REPORTING_DONE');
 });
 
-test('appraisalController.getMyAppraisal creates then loads the appraisal', async () => {
-  const getOrCreateAppraisal = createAsyncSpy(async () => ({ id: 'appraisal-1' }));
+test('appraisalController.getMyAppraisal returns the existing appraisal when one is loaded', async () => {
   const getAppraisalFull = createAsyncSpy(async () => ({ id: 'appraisal-1', status: 'DRAFT' }));
 
   const controller = loadModule(appraisalControllerPath, {
     '../services/appraisalService': {
-      getOrCreateAppraisal,
+      getOrCreateAppraisal: createAsyncSpy(async () => undefined),
       getAppraisalFull,
       updateSelfAssessment: createAsyncSpy(async () => undefined),
       submitAppraisal: createAsyncSpy(async () => undefined),
@@ -80,9 +79,32 @@ test('appraisalController.getMyAppraisal creates then loads the appraisal', asyn
   const res = createRes();
   await controller.getMyAppraisal({ user: { id: 'user-1' }, params: { cycleId: 'cycle-1' } }, res, () => {});
 
-  assert.equal(getOrCreateAppraisal.calls.length, 1);
   assert.equal(getAppraisalFull.calls.length, 1);
   assert.equal(res.body.appraisal.id, 'appraisal-1');
+});
+
+test('appraisalController.getMyAppraisal returns null when no appraisal exists yet', async () => {
+  const getAppraisalFull = createAsyncSpy(async () => { throw new Error('not found'); });
+
+  const controller = loadModule(appraisalControllerPath, {
+    '../services/appraisalService': {
+      getOrCreateAppraisal: createAsyncSpy(async () => undefined),
+      getAppraisalFull,
+      updateSelfAssessment: createAsyncSpy(async () => undefined),
+      submitAppraisal: createAsyncSpy(async () => undefined),
+      saveKpaRatings: createAsyncSpy(async () => []),
+      saveAttributeRatings: createAsyncSpy(async () => []),
+      advanceAppraisalStatus: createAsyncSpy(async () => undefined),
+      getAppraisalsForOfficer: createAsyncSpy(async () => []),
+      hrFinalizeAll: createAsyncSpy(async () => []),
+    },
+    '../utils/auditLogger': { logAudit: createAsyncSpy(async () => undefined) },
+  });
+
+  const res = createRes();
+  await controller.getMyAppraisal({ user: { id: 'user-1' }, params: { cycleId: 'cycle-1' } }, res, () => {});
+
+  assert.equal(res.body.appraisal, null);
 });
 
 test('appraisalController.hrFinalizeAll returns the number of finalized appraisals', async () => {

@@ -21,7 +21,7 @@ test('computeKpaScore uses the latest rating per KPA goal', () => {
   assert.equal(score, 70);
 });
 
-test('computeAttributeScore averages the latest attribute ratings and scales to 100', () => {
+test('computeAttributeScore averages the latest attribute ratings on a 1-5 scale', () => {
   const score = computeAttributeScore(
     [
       { attributeId: 'a1', rating: 3, updatedAt: '2026-01-01T00:00:00Z', attribute: { type: 'VALUES' } },
@@ -32,19 +32,33 @@ test('computeAttributeScore averages the latest attribute ratings and scales to 
     'VALUES',
   );
 
-  assert.equal(score, 90);
+  // Latest per attribute: a1=4, a2=5 → avg = 4.5
+  assert.equal(score, 4.5);
 });
 
-test('computeFinalScore honors configured weights and tolerates missing attribute scores', () => {
-  const score = computeFinalScore(82, null, 70, { kpa: 50, values: 25, competencies: 25 });
-  assert.equal(score, 58.5);
+test('computeAttributeScore returns null when no ratings match the requested type', () => {
+  const score = computeAttributeScore(
+    [{ attributeId: 'a1', rating: 5, attribute: { type: 'COMPETENCIES' } }],
+    'VALUES',
+  );
+  assert.equal(score, null);
 });
 
-test('getRatingBand returns correct score buckets', () => {
-  assert.equal(getRatingBand(95), 'Outstanding');
-  assert.equal(getRatingBand(75), 'Good');
-  assert.equal(getRatingBand(60), 'Average');
-  assert.equal(getRatingBand(45), 'Below Average');
-  assert.equal(getRatingBand(12), 'Poor');
+test('computeFinalScore converts KPA from 0-100 to 1-5 and applies weights', () => {
+  // kpa=82 → 4.1 (×0.50 = 2.05), values null → 0, competencies=4 (×0.25 = 1)
+  const score = computeFinalScore(82, null, 4, { kpa: 50, values: 25, competencies: 25 });
+  assert.equal(score, 3.05);
+});
+
+test('computeFinalScore returns null when KPA is null', () => {
+  assert.equal(computeFinalScore(null, 4, 4, { kpa: 60, values: 20, competencies: 20 }), null);
+});
+
+test('getRatingBand maps 1-5 scores to bands', () => {
+  assert.equal(getRatingBand(4.6), 'Outstanding');
+  assert.equal(getRatingBand(3.8), 'Good');
+  assert.equal(getRatingBand(2.7), 'Average');
+  assert.equal(getRatingBand(1.6), 'Below Average');
+  assert.equal(getRatingBand(1.2), 'Poor');
   assert.equal(getRatingBand(null), null);
 });
