@@ -4,7 +4,7 @@ const { NotFoundError } = require('../utils/errors');
 async function individualReport(userId, cycleId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, department: true, employeeCode: true, role: true },
+    select: { id: true, name: true, email: true, department: true, employeeCode: true, role: true, reportingOfficerId: true, reviewingOfficerId: true, acceptingOfficerId: true },
   });
   if (!user) throw new NotFoundError('User');
 
@@ -20,7 +20,21 @@ async function individualReport(userId, cycleId) {
   const kpas = await prisma.kpaGoal.findMany({ where: { userId, cycleId } });
   const midYear = await prisma.midYearReview.findUnique({ where: { userId_cycleId: { userId, cycleId } } });
 
-  return { user, appraisal, kpas, midYear };
+  const officerIds = new Set();
+  if (appraisal) {
+    if (appraisal.kpaRatings) appraisal.kpaRatings.forEach(r => officerIds.add(r.ratedBy));
+    if (appraisal.attributeRatings) appraisal.attributeRatings.forEach(r => officerIds.add(r.ratedBy));
+  }
+
+  const officers = await prisma.user.findMany({
+    where: { id: { in: Array.from(officerIds) } },
+    select: { id: true, name: true, role: true }
+  });
+  
+  const officerMap = {};
+  officers.forEach(o => officerMap[o.id] = o);
+
+  return { user, appraisal, kpas, midYear, officerMap };
 }
 
 async function departmentSummary(cycleId, department) {
